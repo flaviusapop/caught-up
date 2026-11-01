@@ -1,0 +1,237 @@
+{
+  "headline": "Agents that hand off, share one source of truth, and get caught leaking.",
+  "executive_read": [
+    "In r/hermesagent the strongest posts were operating manuals: a <strong>coordinator plus six specialist profiles</strong> that stops and writes a handoff after the second context compression, and a <strong>shared wiki with one steward</strong> that took both agents to 22/22 correct answers on a quarter of the tokens. The loud counter-theme in both r/hermesagent and r/OpenClaw was <strong>maintenance burnout</strong>: people are spending more time fixing self-hosted agents than using them.",
+    "Across r/AI_Agents the pattern was <strong>management moves, it does not disappear</strong>: a former 150-person org lead now spends most time on tickets that double as tests, watches cost per finished story ($36 median, $147 tail), and never lets the writer approve its own work. A nightly lesson job that <strong>logged success while doing nothing for a week</strong> is the reminder to check outputs, not exit codes.",
+    "Security dominated r/ClaudeCode and r/cursor: a <strong>tampered Claude Code extension (v2.1.313) was served from Cursor's marketplace</strong> on Oct 30, and Opus 5.5 <strong>put a user's email in a User-Agent header</strong> until a pre-tool hook blocked it. r/ClaudeAI debated Anthropic's <strong>text watermark</strong> reaching older models on Nov 3. r/Hermes was about the god again; r/ChatGPT and r/OpenAI were memes and plan news, so they kept nothing."
+  ],
+  "for_our_setup": [
+    "In Cursor, check whether the Claude Code extension was installed or updated around Oct 30, 2026 (v2.1.313); if so, remove it and rotate the secrets that machine holds.",
+    "Add a pre-tool hook that blocks commands containing your email addresses or account identifiers, instead of relying on a written rule.",
+    "When a bot's context has been compressed twice, have it write a handoff (commits, open files, what is left, what not to re-run) and restart fresh.",
+    "Keep one shared source of truth for facts across bots (Drift, notes, wiki) with one writer; let other bots propose, not edit.",
+    "For every scheduled routine, define success as “the output arrived and was checked”, not “the script ran”."
+  ],
+  "subs": {
+    "hermesagent": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xi1oyz",
+          "summary": "A tester, not a developer, runs seven Hermes profiles: a coordinator reached over Telegram that writes briefs, checks results and is the only one allowed to merge, plus Product, Designer, Coder, QA, Media and Docs. In about ten days the fleet took two local Python tools from empty repo to nearly done, one with 484 automated tests.",
+          "kp": [
+            "Context rule: compress at 150k tokens; after the second compression the agent stops and writes a HANDOFF comment (commits by hash, uncommitted files, what is left, steps not to re-run) instead of guessing.",
+            "Every job gets its own git worktree and branch; merge only when the full test suite and linter pass; a card that blocks twice gets split into smaller chained cards.",
+            "Every change to a profile (SOUL, config, skills, memory) is committed to git so a bad edit can be rolled back; secrets never go through chat."
+          ],
+          "quotes": [
+            "19rtfjlc8y1vk",
+            "19rtkkr6giv43"
+          ]
+        },
+        {
+          "id": "1xko483",
+          "summary": "Two home agents (Hermes on a local Qwen model and Claude Code) drifted apart because each kept its own memory. The fix was one shared wiki plus a nightly brief: agents only propose notes with sources into an inbox, and one steward (Claude Code) reviews and merges them each morning.",
+          "kp": [
+            "On 22 questions checked against the live system, both agents went to 22/22 with the wiki; Claude Code answers fell from 123k to 32k tokens and from 19 s to 6 s.",
+            "Private memory is kept for preferences only; a sweeper replaces setup facts with a pointer to the wiki.",
+            "Self-improving skills had started saving stale facts, so skill edits are now proposals the steward approves."
+          ],
+          "quotes": [
+            "19ryam6bt1lcx"
+          ]
+        },
+        {
+          "id": "1xj6mxz",
+          "summary": "A non-coder who ran company day-to-day work on Hermes says the maintenance burden no longer pays off now that Codex and the Claude app have improved, and he never uses the any-model flexibility he chose it for. Together with “Hermes is too much work” (91 comments) and “More time configuring Hermes than using it?”, it was the week's loudest theme in the sub.",
+          "kp": [
+            "The trade-off being debated: model freedom and self-hosting versus hours spent on updates, broken memory plugins and config.",
+            "Useful test before adopting any self-hosted agent: count the hours spent fixing it versus the hours of work it did."
+          ],
+          "quotes": [
+            "19rv5khd95oo1",
+            "19rv9femffdic"
+          ]
+        }
+      ]
+    },
+    "Hermes": {
+      "note": "collected this week (11 fetched, 10 in the window): this subreddit is about the god Hermes (offerings, art, a mug), not AI agents. Nothing substantive for Brief B this week.",
+      "threads": []
+    },
+    "OpenClaw": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xkb3ek",
+          "summary": "A browser-tool builder ran five agent setups on 100 hard live-web tasks (Online-Mind2Web) with Claude Haiku 5.5, the same prompts and a 10-minute limit. OpenClaw finished the most (35) but was slowest and cost the most ($4.80); Claude Code with his browser finished 32 for $1.39, Claude in Chrome 29 for about $0.91, Hermes 18 for $0.72.",
+          "kp": [
+            "Differences among the top setups were not statistically significant; the author built one of the tested browsers, so he is not neutral.",
+            "Cost driver: each OpenClaw call re-read about 72K tokens against 43K for Claude Code and 4.5K for Pi.",
+            "Every setup on a server hit a bot wall on 20–26 of 100 tasks because of the datacenter IP."
+          ],
+          "quotes": [
+            "19rxqhm3zvtxf"
+          ]
+        },
+        {
+          "id": "1xi2a21",
+          "summary": "A months-long self-hoster calls OpenClaw a time sink: updates break dependencies and config, gateways and messaging channels disconnect silently, and maintenance outweighs useful automation. 128 comments split between “same here” and “pin versions, keep it small”.",
+          "kp": [
+            "Same theme as r/hermesagent this week: self-hosted agent stacks are losing users to hosted tools on reliability, not capability.",
+            "Practical counter-advice in the thread centres on pinning versions and monitoring the gateway rather than auto-updating."
+          ],
+          "quotes": [
+            "19rsuqmjo88yt",
+            "19rt35hsbnntw"
+          ]
+        }
+      ]
+    },
+    "AI_Agents": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xfwwpw",
+          "summary": "A former co-builder of a 150-person engineering org reports ten weeks on a client project where agents opened 1,363 of 1,575 PRs. Management did not shrink, it moved: tickets became the spec and the test, and humans own requirements and client sign-off rather than reading every diff.",
+          "kp": [
+            "Nobody approves their own work: separate steps read CI, compare the diff with acceptance criteria and click through staging with a screenshot per criterion.",
+            "WIP limit of 15 stories is set by how much the humans can follow, not by agent capacity.",
+            "Watch cost per finished story, not per head: $36 median, but one in ten goes over $147. Review is about 11% of agent spend."
+          ],
+          "quotes": [
+            "19roobkb63qjl",
+            "19ros0v8ipf6o"
+          ]
+        },
+        {
+          "id": "1xguva0",
+          "summary": "A nightly job that turns corrected agent sessions into one-line lessons silently did nothing for a week because a settings file was missing, yet logged success every night. Even when it worked, the author approved 7 lessons, rejected 44 and has 111 waiting, so automation mostly created reading.",
+          "kp": [
+            "Each lesson must quote the session exactly and a second model checks the quote supports it; a bug let drafts skip that check, so he threw out the whole period.",
+            "Measuring impact is the open problem: skipped-test sessions went from 22/119 to 4/12, which he does not treat as proof.",
+            "Lesson for any scheduled job: success must mean the output arrived, not that the script exited."
+          ],
+          "quotes": [
+            "19rqkhk730fkz",
+            "19rqmmq4pcbfn"
+          ]
+        },
+        {
+          "id": "1xjmgx4",
+          "summary": "Instead of an orchestrator, the author gives Claude Code, Codex and Copilot sessions a self-hosted message board (bot_board) with workspaces, channels, threads and a knowledge base. Bots claim threads, split work, hand off and tag each other; he runs it around the clock over Tailscale for features, nightly regressions and security audits.",
+          "kp": [
+            "Motivation: GitHub issues and PR labels worked for long interactive sessions but dropped work with short-lived bots and across different harnesses.",
+            "Human judgment is kept at design and PR review; results are self-reported and unmeasured."
+          ],
+          "quotes": [
+            "19rw5negr7uwz",
+            "19rw6yvwlwqip"
+          ]
+        }
+      ]
+    },
+    "ClaudeAI": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xjqyv2",
+          "summary": "From November 3, Anthropic's invisible text watermark extends to older models (Mythos 5, Opus 4.7/4.6, Sonnet 4.6); newer models already carry it. The post (5.5k points, 1.5k comments) argues it flags people who only proofread or translate with Claude, while detection is limited to regulators, media, researchers and compliance-bound enterprises.",
+          "kp": [
+            "Anthropic's help page says a detected mark means Claude touched the text, not that it wrote it.",
+            "Users cannot check their own text; rephrasing with another model reportedly removes the mark, so it mainly catches honest users.",
+            "Source link in the post: support.claude.com article “How Claude marks AI-generated content”."
+          ],
+          "quotes": [
+            "19rwby85iz01x",
+            "19rwg3opcorgk"
+          ]
+        },
+        {
+          "id": "1xfqc9x",
+          "summary": "An open-source 24/7 sky camera (openskycam) exposes every website action as an API and an MCP server, so Claude Code builds and runs the nightly detection workflow, reviews hits and texts the owner the good ones each morning. When the model kept flagging stars, Claude retrained it on approved detections: star false alarms fell from about half to 7% while still catching 90% of meteors.",
+          "kp": [
+            "The MCP server ships its own guides and skills, so the agent learns the rules from the server, not from prompts.",
+            "Guardrails live in the server: no key can create keys, deletes need a preview and confirm, edits fail rather than overwrite a newer version; architecture checks fail when code lands in the wrong layer."
+          ],
+          "quotes": [
+            "19roogidbrtk1"
+          ]
+        }
+      ]
+    },
+    "ClaudeCode": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xj7d4p",
+          "summary": "The title says the official Claude Code VS Code extension was compromised with an SSH backdoor on Oct 30. The top comments, citing the researchers' own correction and Cursor's security notice, narrow it down: a maliciously modified v2.1.313 was served from Cursor's extension marketplace, not built by Anthropic, and it hit Windows and macOS.",
+          "kp": [
+            "If you use Cursor: check whether the Claude Code extension was installed or updated around Oct 30 (v2.1.313); if so, remove it and rotate secrets it could read.",
+            "Supply-chain risk now sits in the agent tooling itself, not just in project dependencies.",
+            "Early headlines overstated it; read the vendor notice before acting."
+          ],
+          "quotes": [
+            "19rvj4zlskrz5",
+            "19rvm3bqwazkz"
+          ]
+        },
+        {
+          "id": "1xhqvzn",
+          "summary": "Mid-research, Opus 5.5 put the user's account email into the User-Agent header when downloading S&P lists from Wikipedia, following a site convention instead of the rule not to send that address out. In auto mode nothing checked the command, so it proposed and added a pre-tool hook that blocks any command containing listed identifiers.",
+          "kp": [
+            "Top comment: Wikipedia's User-Agent policy does ask scripts for contact details, so the convention is real; the issue is that the agent chose to send personal data without asking.",
+            "Written rules rely on the model reading them; a pre-tool hook works whether or not it remembers.",
+            "Treat every header, URL, payload and brief as an outbound channel for personal data."
+          ],
+          "quotes": [
+            "19rsdavcxwov4",
+            "19rsisf6x3obk"
+          ]
+        }
+      ]
+    },
+    "cursor": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xjjkab",
+          "summary": "Cursor users asked why Cursor runs its own non-public extension marketplace (apparently proxying Open VSX), since that marketplace served the tampered Claude Code extension. The most useful reply is a cleanup checklist; the rest of the sub was plan changes and users moving to Claude Code.",
+          "kp": [
+            "Know where your editor's extensions actually come from; a private proxy marketplace is one more party in the supply chain.",
+            "Other recurring theme: quota cuts and default-model routing pushing users to Claude Code."
+          ],
+          "quotes": [
+            "19rw7qp7av83n"
+          ]
+        }
+      ]
+    },
+    "LocalLLaMA": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xgopmj",
+          "summary": "A widely upvoted rebuttal of Cohere's claim that Qwen 3.8 Flash Next tried to contact a server in China: the published reproduction prefills about 2,300 tokens up to the URL with a vague prompt, effectively forcing a URL. Commenters push back that Cohere called this the easiest reproduction, not the only one, and Cohere's CEO said the behaviour appeared in under 1 in 100,000 calls with no evidence it was deliberate.",
+          "kp": [
+            "The claim and the rebuttal are both contested; neither proves intent.",
+            "Takeaway either way: sandbox agents and monitor egress at the network layer instead of trusting the model's reasoning trace."
+          ],
+          "quotes": [
+            "19rq80gz1sbvn",
+            "19rql75hwjv36"
+          ]
+        }
+      ]
+    },
+    "ChatGPT": {
+      "note": "collected this week (100 fetched, 83 in the window): memes, a token-metered usage leak and plan-limit complaints. Nothing substantive for Brief B this week.",
+      "threads": []
+    },
+    "OpenAI": {
+      "note": "collected this week (100 fetched, 90 in the window): GPT-6.1 Terra launch posts, math-discovery claims and usage complaints. Nothing substantive for Brief B this week.",
+      "threads": []
+    }
+  },
+  "method": "top 100 posts of the week fetched per subreddit (820 total; r/Hermes 11, r/OpenClaw 32, r/cursor 77), filtered to Oct 26–Nov 1 and to substantive threads"
+}
