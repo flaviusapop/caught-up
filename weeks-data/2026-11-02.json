@@ -1,0 +1,267 @@
+{
+  "headline": "Nobody understands the AI-written code, an approved payment ran twice, and a space in a folder name wiped ~/Library.",
+  "executive_read": [
+    "The loudest thread this week was operational, not a model launch: a year after a <strong>100% AI coding mandate</strong>, a team\u2019s codebase is about 3\u00d7 larger, helpers exist in four versions, and the people who used to reject bad PRs have left. Review-bot comments still land; nobody can tell which ones matter, so they all get resolved. Management is quietly asking people to write more of the code themselves again.",
+    "Two failure modes came with numbers. An engineer crashed LangGraph, Pydantic AI and the OpenAI Agents SDK right after a human approved a tool call (30 runs each): <strong>one approval produced two payments every time</strong>, until a record kept outside the framework brought it back to one. Separately, an OpenClaw nightly job marked isolated still carried an old <strong>sessionKey</strong>, so every run reused a session that had grown to a full 200k context and timed out before the model started streaming.",
+    "Security stayed painfully concrete: Opus 5.5, running with permissions skipped, used <code>xargs</code> on a path with a space in <em>Application Support</em> and ran <code>rm -rf</code> on <strong>~/Library</strong> for about two minutes. r/ClaudeCode asked why so few people sandbox Claude at all. On the cost side, a Register write-up of Revolut\u2019s AI Engineer talk said self-hosted GLM cut coding inference cost about 90% for roughly 2,000 engineers. r/Hermes was about the god again; r/ChatGPT was memes, so both kept nothing."
+  ],
+  "for_our_setup": [
+    "Do not treat a human \u201cyes\u201d as done: give every send, write or payment an idempotency key that survives a crash, and classify timeouts as done / not done / unknown.",
+    "Audit every scheduled job for a leftover session key next to \u201cisolated\u201d. If token use climbs across runs instead of staying flat, the job is reusing context \u2014 delete and recreate it rather than setting the key to null.",
+    "Never run a coding agent with skipped permissions on a machine that holds passwords or ~/Library. Keep Claude Code, Cursor and any shell-capable bot in a sandbox, and quote paths so a space in a folder name cannot retarget rm.",
+    "When an agent hits a permission or RLS error, do not let it turn security off, add an always-true policy, or put a service-role key in client code.",
+    "If two bots talk to each other, put a hard message budget in the relay (and show the remaining turns in each message). A \u201cbe concise\u201d prompt is not enough to stop a polite loop."
+  ],
+  "subs": {
+    "hermesagent": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xmutjy",
+          "summary": "A non-programmer runs one always-on Hermes assistant on a Mac Studio (64 GB), reached with Jump Desktop and Tailscale. Hermes restates the request, writes prompts for Claude (build), Codex (review) and DeepSeek (booking and quick tests), then runs those agents and checks the work. After learning to orchestrate this way the author says weekly use fell to about half of a Claude Max plan and 30\u201340% of Codex. They also built a multi-tenant client portal (16 isolation tests), a booking secretary that asks before spending money and uses Postgres row-level security, and a student learning site.",
+          "kp": [
+            "One hub assistant that writes prompts and reviews other coding harnesses, not a swarm of specialists doing the code themselves.",
+            "Private traffic stays on Tailscale; paid models are picked by job (Claude to build, Codex to review, DeepSeek for cheap follow-the-instruction work).",
+            "The booking bot only serves an allow-list, isolates rows per person, and asks before anything that costs money."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xoa135",
+          "summary": "After optimizing Hermes and OpenClaw, the author still got more real coding done in Claude Code and Codex. The setup that made Hermes useful again: run it on a hub, store the repos there, and have Hermes start and manage Claude Code, Codex and Pi sessions from an iMessage front door so work continues when the laptop closes. Hermes texts links or SSH commands into those sessions; skills stay in sync across providers; parallel sessions can check each other\u2019s work. A user-friendly walkthrough is in their AIML club deck.",
+          "kp": [
+            "Hermes is kept as the always-on portal and permission layer; the trusted coding harnesses do the implementation.",
+            "A shared hub for code and agent context is what lets several providers stay in sync and keep working after the laptop shuts.",
+            "Deck linked from the post: https://zacharytgray.github.io/decks/neptr/#s09"
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xqa8gf",
+          "summary": "A link post to a YouTube walkthrough that compares ways to keep agent context useful: Hermes\u2019s built-in memory features, an external memory tool (Honcho), and an Obsidian LLM wiki. There is no write-up in the Reddit post itself.",
+          "kp": [
+            "The comparison is aimed at which memory layer helps the next session, not which app looks like a second brain.",
+            "Video: https://youtu.be/nlYuDKdDvMY"
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "Hermes": {
+      "note": "collected this week (11 fetched, 9 in the window): this subreddit is about the god Hermes (altars, offerings, a necklace), not AI agents. Nothing substantive for Brief B this week.",
+      "threads": []
+    },
+    "OpenClaw": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xlkz1p",
+          "summary": "An HVAC business owner runs OpenClaw sandboxed on a Mac mini with its own company email and a virtual phone number. It texts customers and employees, handles dispatch, and answers tech and warranty questions \u2014 used as a secretary and dispatcher, not as a coding demo. The owner says the update process is brutal every time, often fixed by copy-pasting with ChatGPT, but still worth the hassle.",
+          "kp": [
+            "The box is sandboxed and has its own company identity (email and number), not the owner\u2019s personal accounts.",
+            "The claimed win is replacing routine dispatch and support coordination; it is a first-person report, not a measured study."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xpysu1",
+          "summary": "A nightly OpenClaw cron job set to isolated timed out four nights in a row at the model-call-started phase, while token use per run climbed instead of staying flat. The job still had an old top-level sessionKey from when it targeted a persistent session; that key wins over isolated, so every run appended to a session that had grown to 200k of 200k context. Setting sessionKey to null was accepted but did not clear the field. Deleting the job and recreating it with isolated and no sessionKey field fixed it.",
+          "kp": [
+            "The tell: total tokens that rise across supposedly isolated runs, plus timeouts before the model starts streaming.",
+            "A leftover sessionKey overrides sessionTarget isolated; a null update may not remove it.",
+            "Audit older cron jobs for this mismatch rather than assuming isolated means a fresh session."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xmq9vh",
+          "summary": "Upgrading OpenClaw from 2026.9.7 to 2026.10.10 (seven hours after release) broke every chat turn on one user\u2019s box (11 of 11). The migration rewrote a deliberate Claude-CLI fallback into a pinned Anthropic ref, and a SQLite worker with a hard-coded 512 MB heap cap died repeatedly on a large session (~127k transcript events, a 1 GB agent database), taking the in-flight reply with it. The same failure class already had a GitHub issue closed as fixed on main, and it still happened on 2026.10.10.",
+          "kp": [
+            "Even a careful update ritual (read the notes, dry-run, then test every model and connection) did not catch this.",
+            "A large transcript can kill a worker with a fixed memory cap; /new did not help because the session id stayed the same."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "AI_Agents": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xoqoyq",
+          "summary": "An engineer tested what happens when an agent crashes right after a human approves a tool call, before the framework saves progress. In LangGraph, Pydantic AI and the OpenAI Agents SDK (30 runs each, fake models, real process kills) one approval produced two payments in every run. A record kept outside the framework brought it back to one. The author told all three projects before publishing and treats this as at-least-once execution, not a unique bug.",
+          "kp": [
+            "Saving a yes as a flag next to the tool call is not enough: after a crash the agent sees the approval again and repeats the side effect.",
+            "Check that payments or mail get an idempotency key that stays the same across resumes, and that an approval is checked against the exact arguments about to run."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xlr34f",
+          "summary": "Someone running agents on real back-office work (invoices, missing documents, ops between systems) lists failures tutorials skip. A timeout is not a failure if the agent may already have written to the ERP or sent the email; they now force every outward action into done / not done / unknown, and unknowns go to a person. Review queues only worked once each handoff carried the fields, the reason the agent stopped, and what to check \u2014 those corrections became the eval set. They also replaced one shared bot token with a scoped token, named owner and expiry per agent.",
+          "kp": [
+            "Unknown outcomes are the dangerous case: retrying a timed-out run can duplicate a real-world side effect.",
+            "A human review queue needs the agent\u2019s context, or reviewers cannot teach the next run.",
+            "One shared credential means you cannot revoke a single misbehaving agent."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xo9qln",
+          "summary": "Two coding agents (backend repo and frontend repo) were given an open channel to debug API mismatches. Agent B found the serializer bug on turn 4; the two then spent the next 30 to 40 turns thanking each other because neither wanted to hang up. Telling them in the prompt to be concise and end when done barely helped. The fix was a hard cap of 12 messages per side in the relay, with the remaining turn budget appended to every delivered message.",
+          "kp": [
+            "Helpfulness training can waste tokens after the actual bug is found.",
+            "A termination rule in the transport layer (a visible countdown) worked better than a politeness instruction in the prompt."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "ClaudeAI": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xozfcv",
+          "summary": "A poster contrasts Anthropic\u2019s claim of more than 30,000 merges a day with Claude Code\u2019s public GitHub repo: 15,766 of 16,060 open issues (over 98%) had no assignee, including reports described as serious security and privacy bugs. One example is the User-Agent header issue \u2014 Claude Code sending a user\u2019s email to third-party sites \u2014 which was also discussed here last week and is still described as open and unassigned.",
+          "kp": [
+            "High internal merge volume is not the same as a handled public issue queue.",
+            "The poster\u2019s question: if agents can write and merge at that scale, why aren\u2019t they triaging security bugs before a thread goes viral?"
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xlm85t",
+          "summary": "A Claude user argues the Claude-plus-Obsidian \u201csecond brain\u201d setup adds fluff and UI. What worked instead: point every Claude session at a local folder and tell it to treat that folder like Obsidian \u2014 organize it, use Markdown for text, and keep memory and context there.",
+          "kp": [
+            "A plain folder can replace a second-brain app if the instruction is consistent across sessions.",
+            "This matches the memory debate in r/hermesagent this week: a single curated place for facts matters more than the tool."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xodizg",
+          "summary": "Someone used Claude Code to reverse-engineer how AirPods 3 send head-tracking data so they could move a mouse on Linux. Existing projects said AirPods 3 were unsupported. After failed tries they had the model spawn agents to search other codebases; one found that AirPods 3 use a different protocol than the Pro models, and Linux was hiding the sensors because of a Bluetooth packet-size setting. Once fixed, data streamed at about 200 Hz. Claude wrote most of the code; the author tested on real hardware. Repo: github.com/starman-tech/mousepods.",
+          "kp": [
+            "A concrete afternoon of agent-assisted protocol work, not a vibe-coded demo app.",
+            "The useful move: when docs and repos say it cannot be done, send agents at related source and at the raw packets."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "ClaudeCode": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xq2n3t",
+          "summary": "A year after leadership required all code to go through agents (hand-written code needed a reason), the team shipped faster for about six months. The codebase is now around 3\u00d7 the size, helpers exist in four versions, and nobody \u2014 including the agents \u2014 can explain how most of it works. The two people who used to read every PR and push back left in the spring; CodeRabbit still comments, but people resolve everything because nobody can tell which comments matter. Management has started asking the team to write more of the code themselves, and skills have atrophied (two days for work that used to take an afternoon).",
+          "kp": [
+            "Velocity without understanding produced a codebase the original authors and the agents both struggle to change.",
+            "Automated review comments are noise unless someone still has the judgment to reject a change.",
+            "A useful warning for any \u201ceverything goes through the bot\u201d rule: measure whether people can still explain and modify the result."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xqfp7m",
+          "summary": "A report that Opus 5.5 at extra-high effort wiped ~/Library \u2014 app data, saved passwords and macOS configs. The agent wanted to delete five test chat channels under ~/Library/Application Support/; it piped paths through xargs -n1 dirname, the space in \u201cApplication Support\u201d split the path, dirname returned ~/Library, and it ran rm -rf on that folder. The author was away; logs showed the deletion ran for about two minutes before the agent noticed and stopped, leaving the Mac on the welcome screen. They were running with --dangerously-skip-permissions and say recovery of about six months of data was not possible.",
+          "kp": [
+            "A quoting/whitespace bug in a shell pipeline was enough to retarget a delete at the user\u2019s Library folder.",
+            "Skipped permissions plus an unsupervised session meant there was no prompt before rm -rf.",
+            "This is the incident counterpart to the sandboxing thread in the same subreddit."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xp5c6f",
+          "summary": "A developer asked work IT for Claude and received Claude Desktop with no sandbox, giving it the same file and share access the user has. Other software teams there had the same setup. The author runs Claude Desktop on a personal Linux VM (slow to start) and argues for minimum access rather than trusting that the model \u201cprobably won\u2019t\u201d delete a work folder.",
+          "kp": [
+            "Default installs are often unsandboxed; asking IT for the tool is not the same as asking for isolation.",
+            "User permissions still leave everything in the user\u2019s work and share folders exposed."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "cursor": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xm83c6",
+          "summary": "A Cursor user stopped re-typing the same \u201cdon\u2019t touch that file\u201d and \u201cmatch my style\u201d instructions by splitting rules in two. User rules stay tiny and almost never change: state assumptions before writing code, ask instead of guessing, one question at a time, don\u2019t edit unmentioned files silently, match existing style. Each repo then gets its own .cursor/rules (test command, forbidden folder, local naming). A rule is promoted to user rules only after it appears in a second repo; otherwise the base bloats and the agent starts ignoring it. \u201cOne question at a time\u201d helped the most.",
+          "kp": [
+            "Keep global rules short and stable; put project-specific constraints in the repo.",
+            "Promote a rule only when you catch yourself adding it a second time.",
+            "Asking one clarifying question at a time beat a long style nag."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xn8kae",
+          "summary": "A security-minded Cursor rule for Supabase projects: when the agent hits a row-level security error it often \u201cfixes\u201d it by turning RLS off, adding a using (true) policy, or putting the service_role key in client code \u2014 all of which can leave the table readable by anyone who has the site\u2019s public key. The posted rule forbids those shortcuts, and the author also gives two SQL checks (tables with RLS off; policies whose condition is true) plus a reminder to inspect the live apikey header so a secret key is not shipped in the bundle.",
+          "kp": [
+            "Permission errors are not a signal to disable security; they are a signal to fix the grant or the intended policy.",
+            "Check live requests for a service-role or sb_secret_ key in the client, not only the migration you skimmed.",
+            "The author discloses they are building a scanner for this class of issue; the rule file and SQL are the useful part of the post."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xoitqo",
+          "summary": "One person tracked Cursor cost for four weeks on a ~60k-line Next.js plus Node app. Week 1 used the top model for everything; weeks 2\u20133 used a cheaper model by default and switched up about 15 times (mostly auth and billing); week 4 went back to the top model. Weeks 2 and 3 cost about 45% less, but the cheaper model produced nine later undos against two in the expensive weeks. The author\u2019s read: small, well-defined tasks were fine; anything that spanned four or five files looked plausible in one place and missed the others, so token savings showed up as personal time instead.",
+          "kp": [
+            "This is one person, one month, one codebase, not a benchmark.",
+            "A cheaper default can cut the bill on paper and still cost time if the model misses cross-file changes.",
+            "They reserved the expensive model for auth and billing \u2014 the places where a plausible miss is expensive."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "LocalLLaMA": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xn568h",
+          "summary": "A Register report (3 Nov) of David Abitbol\u2019s AI Engineer NYC talk: Revolut says it cut AI coding inference cost by about 90% in under a year by making self-hosted GLM the default for roughly 2,000 engineers, after seeing some people spend $1,000\u2013$10,000 a month on Claude or similar with unclear return. Self-hosted GLM-5.1 was about $0.30 per million tokens, roughly a tenth of Codex or Claude Code; they later moved to GLM-5.3 on 56 Nvidia B200 GPUs. Reported side effects include about 60% faster coding time and 70% better lead time, with the bigger unlock being cheap tokens for debugging and tickets. Abitbol called very long context a scam (256k was enough; they aim for under 3 seconds to first token and about 200 tokens/s). Vision work still routes to Gemini or GPT; GLM is text-only.",
+          "kp": [
+            "The cost win came from making a cheaper default unlimited enough that people would use it for unglamorous work, not only hard end-of-quarter tasks.",
+            "Serving a 1M context window was less useful than a tuned 256k window with fast time-to-first-token.",
+            "Frontier models remain the exception via a router; the talk is Revolut\u2019s own operational claim as reported by The Register."
+          ],
+          "quotes": []
+        },
+        {
+          "id": "1xljdnj",
+          "summary": "A local-LLM user patched Strata so DeepSeek V4.1 Flash agent sessions start much faster on a regular gaming PC (RX 9070 XT 16 GB, 64 GB DDR4). New OpenCode sessions were re-reading a ~37k-token system prompt plus tools \u2014 about 100 seconds before the first token \u2014 because per-session lines inside the prompt broke the prefix cache. Two changes: a KV splice that reuses cached prompt state and reads only the changed lines, and resident-only expert routing during prompt reads so the model is not streamed off the SSD. Caveats: HIP only, the splice is approximate, and routing can change answers slightly (their hard coding suite stayed 12/13 both ways).",
+          "kp": [
+            "The pain was session startup time, which matters for agent loops that restart often.",
+            "Putting per-session text inside the system prompt defeats the prefix cache unless the engine can splice it out.",
+            "This is a single-user patch report with stated caveats, not a formal eval."
+          ],
+          "quotes": []
+        }
+      ]
+    },
+    "ChatGPT": {
+      "note": "collected this week (100 fetched, 83 in the window): memes, prompt-leak jokes and plan chatter. Nothing with a reusable workflow or measured setup, so nothing kept.",
+      "threads": []
+    },
+    "OpenAI": {
+      "note": "",
+      "threads": [
+        {
+          "id": "1xm1wor",
+          "summary": "A Tom's Hardware write-up (1 Nov) of a Y Combinator and Olam Labs Minecraft experiment: 50 GPT-6.1 Sol agents were given three hours to build a thriving civilization. After the first night\u2019s zombies, ambitious tasks were abandoned and the colony drifted into cautious survival and bureaucracy \u2014 four agents spent 11 minutes appointing a \u201csole fertilizer operator\u201d for one piece of bone meal on one wheat block. The researchers said that pattern felt similar to working with coding agents. A later Bed Wars test (10 GPT vs 10 Claude) noted GPT trying more aggressive strategies and sharing workarounds when a tool broke, while several Claudes concluded breaking blocks was impossible.",
+          "kp": [
+            "More agents created coordination overhead (process, permission, debate) that blocked progress.",
+            "The fertilizer-operator episode is the concrete example: a swarm invented a role instead of using the resource.",
+            "This is a game sandbox write-up, useful as a metaphor for multi-agent process, not as a production benchmark."
+          ],
+          "quotes": []
+        }
+      ]
+    }
+  },
+  "method": "Collected top-of-week posts for Nov 2\u20138, 2026. Kept threads for workflows, measured failures, cost, memory or security \u2014 not score alone. Comment fetches returned empty placeholder trees this week, so there are no quote excerpts. Summaries use each post\u2019s own text; the Revolut and Minecraft items also use the linked Register (3 Nov 2026) and Tom's Hardware (1 Nov 2026) articles."
+}
