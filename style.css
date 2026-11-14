@@ -283,13 +283,26 @@ a.week-row:hover .week-name{text-decoration:underline;text-underline-offset:3px}
 .bbsynth{border-top:1px solid var(--edge);margin:0}
 
 /* Brief C — AI Engineer: original .tcard / .tc / .callout / .badge patterns only */
-.aie-card,.aie-idea,.aie-concept{overflow-wrap:anywhere;scroll-margin-top:calc(var(--top) + var(--wk))}
+.aie-card,.aie-idea,.aie-concept{overflow-wrap:anywhere;min-width:0;max-width:100%}
+/* jumps to a talk or idea land below the sticky top bar + the sticky Brief C header (8+44+8px) */
+.aie-card,.aie-idea{scroll-margin-top:calc(var(--top) + 68px)}
+.aie-concept{scroll-margin-top:calc(var(--top) + 12px)}
+.aie-more .grph a{display:inline-flex;align-items:center;min-height:44px;color:inherit}
+.aie-more .grph{align-items:center;padding-top:8px;padding-bottom:0}
 .aie-det .tc-body{margin:0 0 10px}
 .aie-det .tc-meta{margin:12px 0 5px}
 .aie-src a,.aie-jump{color:inherit}
 .aie-jump{font-family:var(--m);font-size:10.5px;color:var(--mute)}
 .aie-note{font-size:14.5px;line-height:1.5;color:var(--ink-2)}
 .tcard .badge b.aie-cap{display:inline-flex;align-items:center;padding:1px 6px;background:var(--deep);border-radius:3px;color:var(--ink);font-weight:500;font-size:10px}
-.tcard .badge{flex-wrap:wrap}
+.aie-card .badge,.aie-concept .badge{flex-wrap:wrap}
 .aie-ev li{font-size:13.5px}
+
+/* mobile: long week-list labels (e.g. "· BRIEF C: 38 TALKS") wrap inside the row
+   instead of widening the page; rows that already fit stay on one line */
+@media (max-width:560px){
+  .week-row .week-name{flex:0 0 auto}
+  .week-row .week-meta{white-space:normal;min-width:0;flex:1 1 auto;text-align:right;line-height:1.4;padding:6px 0}
+  .week-row .arr{flex:0 0 auto}
+}
 
