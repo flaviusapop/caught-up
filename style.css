@@ -281,3 +281,15 @@ a.week-row:hover .week-name{text-decoration:underline;text-underline-offset:3px}
 .notyet b{color:var(--ink)}
 /* moved Brief B synthesis: original week-header rule */
 .bbsynth{border-top:1px solid var(--edge);margin:0}
+
+/* Brief C — AI Engineer: original .tcard / .tc / .callout / .badge patterns only */
+.aie-card,.aie-idea,.aie-concept{overflow-wrap:anywhere;scroll-margin-top:calc(var(--top) + var(--wk))}
+.aie-det .tc-body{margin:0 0 10px}
+.aie-det .tc-meta{margin:12px 0 5px}
+.aie-src a,.aie-jump{color:inherit}
+.aie-jump{font-family:var(--m);font-size:10.5px;color:var(--mute)}
+.aie-note{font-size:14.5px;line-height:1.5;color:var(--ink-2)}
+.tcard .badge b.aie-cap{display:inline-flex;align-items:center;padding:1px 6px;background:var(--deep);border-radius:3px;color:var(--ink);font-weight:500;font-size:10px}
+.tcard .badge{flex-wrap:wrap}
+.aie-ev li{font-size:13.5px}
+

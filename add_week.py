@@ -20,11 +20,18 @@ A week = Brief A (AI learning plan, from a plan markdown file) + Brief B
        Renders the week block, inserts it newest-first (or replaces the same
        week), updates the jump list and writes weeks/<start>.html redirect.
        Other weeks are left byte-for-byte untouched.
+       Brief C (optional): if weeks-data/aie-<start>.json exists (made by
+       aie_brief.py import-preview), the week also gets Brief C — AI Engineer.
 
 Key: read from /home/box/.config/redditapis.env (REDDITAPIS_API_KEY=...).
 Never printed. Read-only GET requests only.
 """
 import argparse, datetime as dt, html, json, pathlib, re, sys, time
+
+try:  # optional Brief C (AI Engineer); add_week.py works the same without it
+    import aie_brief
+except ImportError:  # pragma: no cover
+    aie_brief = None
 
 ROOT = pathlib.Path(__file__).resolve().parent
 CACHE = ROOT / "data-cache"
@@ -330,6 +337,9 @@ def cmd_build(a):
     </div></div>
   </section>
   </section>'''
+    aie = aie_brief.load(s) if aie_brief and not a.no_brief_c else None
+    if aie:  # weeks-data/aie-<start>.json exists: keep Brief C on rebuild
+        block = aie_brief.apply_to_block(block, aie)
     src = INDEX.read_text()
     loc = find_week(src, wk)
     if loc:
@@ -342,7 +352,7 @@ def cmd_build(a):
         src = src[:nxt] + block + "\n\n  " + src[nxt:]
     # jump list row
     row = (f'<li><a class="week-row" href="#wk-{wk}"><span class="week-name">Week {wk}</span>'
-           f'<span class="week-meta">{md(s)} — {md(e)}, {e.year} · {kept} THREADS KEPT</span><span class="arr" aria-hidden="true">↓</span></a></li>')
+           f'<span class="week-meta">{md(s)} — {md(e)}, {e.year} · {kept} THREADS KEPT{aie_brief.row_suffix(aie) if aie else ""}</span><span class="arr" aria-hidden="true">↓</span></a></li>')
     rx = re.compile(rf'<li><a class="week-row" href="#wk-{wk}">.*?</li>')
     if rx.search(src):
         src = rx.sub(lambda _: row, src, count=1)
@@ -355,6 +365,8 @@ def cmd_build(a):
         else:
             src = src[:pos] + row + "\n      " + src[pos:]
     INDEX.write_text(src)
+    if aie:
+        aie_brief.write_concepts()
     (ROOT / "weeks").mkdir(exist_ok=True)
     (ROOT / "weeks" / f"{a.start}.html").write_text(f'''<!doctype html>
 <html lang="en">
@@ -370,7 +382,8 @@ def cmd_build(a):
 </body>
 </html>
 ''')
-    print(f"Week {wk} built: Brief A '{title_a}', Brief B {kept} threads kept")
+    print(f"Week {wk} built: Brief A '{title_a}', Brief B {kept} threads kept"
+          + (f", Brief C {len(aie['videos'])} talks" if aie else ""))
 
 # ---------------------------------------------------------------- main
 def main():
@@ -380,6 +393,7 @@ def main():
     c.add_argument("--top", type=int, default=25); c.add_argument("--max-pages", type=int, default=8)
     k = sp.add_parser("comments"); k.add_argument("start")
     b = sp.add_parser("build"); b.add_argument("plan"); b.add_argument("start"); b.add_argument("--plan-label")
+    b.add_argument("--no-brief-c", action="store_true", help="leave Brief C out even if weeks-data/aie-<start>.json exists")
     a = ap.parse_args()
     {"collect": cmd_collect, "comments": cmd_comments, "build": cmd_build}[a.cmd](a)
 

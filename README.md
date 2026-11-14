@@ -99,3 +99,21 @@ Re-running `build` for the same week replaces that week in place. Week ids are
 ISO week numbers (`wk-43` = Oct 19–25, 2026). The committed `weeks-data/<start>.json`
 holds the curation, so a week can be rebuilt from cache without new API calls.
 Cost: about (10 + kept threads) calls × $0.002.
+
+## Brief C — AI Engineer (optional)
+
+Talk summaries from the AI Engineer YouTube channel (https://www.youtube.com/@aidotengineer),
+placed in the Mon–Sun week of each talk's publish date. Data: `weeks-data/aie-<monday>.json`
+(derived summaries and concepts only — never transcripts, private URLs or local paths).
+Concepts page: `concepts.html` (anchors `#c-<week>-<n>`); talk cards: `index.html#aie-<videoid>`.
+
+```bash
+# weekly, before or after add_week.py build (save the Hermes preview to a local file first,
+# outside the repo; never commit it or its URL)
+python3 aie_brief.py import-preview /path/outside/repo/preview.html  # places talks by publish date, skips ids already on any week
+python3 aie_brief.py check                    # duplicates, link/id pairing, leak scan
+python3 aie_brief.py render                   # (re)writes Brief C in every week that has data + concepts.html
+```
+
+`add_week.py build` keeps Brief C automatically when `weeks-data/aie-<monday>.json` exists
+(`--no-brief-c` leaves it out). Without that file, build behaves exactly as before.

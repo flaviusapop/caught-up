@@ -36,3 +36,16 @@ if(location.hash){
   const el=document.querySelector(location.hash);
   if(el && el.classList.contains('src')){ setFold(el,false); syncAll(); }
 }
+// Brief C: a link to a talk summary or concept inside a folded brief unfolds it first
+function reveal(){
+  if(!location.hash) return;
+  let el; try{ el=document.getElementById(decodeURIComponent(location.hash.slice(1))); }catch(_){ return; }
+  if(!el) return;
+  const src=el.closest('.src');
+  if(src && src.dataset.fold==='true'){ setFold(src,false); syncAll(); }
+  let d=el.parentElement && el.parentElement.closest('details');
+  while(d){ d.open=true; d=d.parentElement && d.parentElement.closest('details'); }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', reveal);
+if(location.hash) reveal();
