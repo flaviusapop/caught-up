@@ -359,7 +359,7 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
 {CONTRACT}
 {SPRITE}
 <a class="skip" href="#main">Skip to content</a>
-<header class="bar">
+<header class="{'bar has-wk' if nav else 'bar'}">
   <a class="mark" href="index.html" aria-label="Drift, latest week">Drift</a>
   {nav}
   <form class="find" action="search.html" role="search">
@@ -368,7 +368,6 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
   </form>
   <div class="bar-t">
     <a href="ideas.html">Ideas</a>
-    <button type="button" class="txt" data-titles aria-pressed="false">Titles only</button>
     <button type="button" class="txt" data-theme-toggle>Night</button>
   </div>
 </header>
@@ -399,25 +398,33 @@ def stats(w):
 
 
 def ledger(weeks, cur):
+    # A list of grid links, not a table: a stretched link inside a table row covers
+    # the whole page in browsers that do not position table rows.
     rows = ""
     for w in weeks:
         s = stats(w)
-        cell = lambda v, f=str: f(v) if v is not None else '<span aria-label="not collected">–</span>'
-        n, is_cur = w["wk"], w["wk"] == cur
-        tr = ' class="is-cur"' if is_cur else ""
-        ac = ' aria-current="page"' if is_cur else ""
-        rows += (f'<tr{tr}><th scope="row"><a href="week-{n}.html"{ac}><b>{n}</b> '
-                 f'<span>{rng(w["start"], w["end"], False)}</span></a></th>'
-                 f'<td>{cell(s["hours"], fmt_h)}</td><td>{cell(s["kept"])}</td><td>{cell(s["talks"])}</td></tr>')
-    return f"""<aside class="ledger" id="weeks" aria-label="All weeks">
-  <table>
-    <caption>All weeks</caption>
-    <thead><tr><th scope="col">Week</th><th scope="col">Plan</th><th scope="col">Reddit</th><th scope="col">Talks</th></tr></thead>
-    <tbody>{rows}</tbody>
-  </table>
-  <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries.</p>
+        n = w["wk"]
+        ac = ' aria-current="page"' if n == cur else ""
+        hours = fmt_h(s["hours"]) if s["hours"] is not None else "–"
+        kept = str(s["kept"]) if s["kept"] is not None else "–"
+        talks = str(s["talks"]) if s["talks"] is not None else "–"
+        rows += (f'<li><a class="lw" href="week-{n}.html"{ac}><span class="lw-n"><b>{n}</b> '
+                 f'<span>{rng(w["start"], w["end"], False)}</span></span>'
+                 f'<span><span class="vh">plan </span>{hours}</span>'
+                 f'<span><span class="vh">Reddit </span>{kept}</span>'
+                 f'<span><span class="vh">talks </span>{talks}</span></a></li>')
+    return f"""<nav class="ledger" id="weeks" aria-label="All weeks">
+  <h2 class="ledger-h">All weeks</h2>
+  <div class="lw lw-h" aria-hidden="true"><span class="lw-n">Week</span><span>Plan</span><span>Reddit</span><span>Talks</span></div>
+  <ol class="lws">{rows}</ol>
+  <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries. A dash means not collected.</p>
   <p class="ledger-l"><a href="ideas.html">Ideas across weeks</a></p>
-</aside>"""
+</nav>"""
+
+
+def titles_btn():
+    return ('<button type="button" class="chk" data-titles aria-pressed="false">'
+            '<span class="chk-b">' + icon("check") + '</span>Titles only</button>')
 
 
 def band(title, note="", hid=""):
@@ -496,6 +503,7 @@ def render_plan(w, s):
     <button type="button" data-max="0" aria-pressed="true">Any</button><button type="button" data-max="15" aria-pressed="false">15 min</button><button type="button" data-max="30" aria-pressed="false">30 min</button><button type="button" data-max="60" aria-pressed="false">1 hour</button><button type="button" data-max="120" aria-pressed="false">2 hours</button>
   </div>
   <span class="tools-s" data-time-status aria-live="polite"></span>
+  <button type="button" class="chk" data-titles aria-pressed="false"><span class="chk-b">{icon("check")}</span>Titles only</button>
 </div>
 {body}
 {order}
@@ -523,7 +531,7 @@ def render_reddit(w):
     for s in kept:
         btns += f'<button type="button" data-sub="{esc(s["name"])}" aria-pressed="false">{esc(s["name"])} <b>{len(s["threads"])}</b></button>'
     out += (f'<div class="tools" data-subs><span class="tools-l vh" id="sub-l">Subreddit</span>'
-            f'<div class="togs" role="group" aria-labelledby="sub-l">{btns}</div></div>')
+            f'<div class="togs" role="group" aria-labelledby="sub-l">{btns}</div>{titles_btn()}</div>')
     for s in kept:
         rows = ""
         for t in s["threads"]:
@@ -647,7 +655,7 @@ def render_talks(w, where):
 <div class="tools tools-col">
   <label class="filter"><span class="vh">Filter talks by title, speaker or company</span>{icon("search")}<input type="search" data-talk-q placeholder="Filter by title, speaker or company" autocomplete="off"></label>
   <div class="togs" role="group" aria-label="Topics">{togs}</div>
-  <span class="tools-s" data-talk-status aria-live="polite"></span>
+  <div class="tools-r"><span class="tools-s" data-talk-status aria-live="polite"></span><button type="button" class="chk" data-titles aria-pressed="false"><span class="chk-b">{icon("check")}</span>Titles only</button></div>
 </div>
 {rows}
 <p class="none" data-talk-none hidden>No talks match these filters. <button type="button" class="txt" data-talk-clear>Clear filters</button></p>
