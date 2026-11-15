@@ -172,23 +172,6 @@
     q.addEventListener('input', apply);
   }
 
-  // ---- ideas page filter
-  const iq = $('[data-idea-q]');
-  if (iq) {
-    const status = $('[data-idea-status]');
-    const ideas = $$('[data-idea]');
-    iq.addEventListener('input', () => {
-      const terms = iq.value.toLowerCase().split(/\s+/).filter(Boolean);
-      let n = 0;
-      ideas.forEach((d) => {
-        const ok = terms.every((t) => d.textContent.toLowerCase().includes(t));
-        d.hidden = !ok; if (ok) n++;
-      });
-      $$('[data-idea-grp]').forEach((g) => { g.hidden = !$$('[data-idea]', g).some((d) => !d.hidden); });
-      status.textContent = terms.length ? `${n} of ${ideas.length} ideas` : '';
-    });
-  }
-
   // ---- search page
   const sq = $('[data-search-q]');
   if (sq) {

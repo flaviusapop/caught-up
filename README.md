@@ -10,8 +10,8 @@ The public site is now **generated**. The weekly routine below is unchanged: sam
   they edited `index.html` before. `classic/` also holds the old `style.css`, `app.js` and `concepts.html`;
   the old single page stays viewable at `/classic/`.
 - `redesign/build.py` reads `classic/index.html` and `weeks-data/aie-*.json` and writes the public pages at the
-  repo root: `index.html` (the newest week), `week-NN.html` (one per week), `ideas.html`, `search.html`,
-  `search-data.js`, `concepts.html` (redirect to `ideas.html`) and `assets/`.
+  repo root: `index.html` (the newest week), `week-NN.html` (one per week), `search.html`,
+  `search-data.js`, `assets/`, and `ideas.html` + `concepts.html` (redirects: ideas live in each week's Talks view).
   **Both scripts call it at the end**, so there is no extra step. To run it alone: `python3 redesign/build.py`.
 - Never edit the root `*.html`, `search-data.js` or `assets/` by hand: the next build overwrites them.
   Design changes go in `redesign/src/style.css`, `redesign/src/app.js` and `redesign/build.py`.
@@ -132,7 +132,7 @@ Talk summaries from the AI Engineer YouTube channel (https://www.youtube.com/@ai
 placed in the Mon–Sun week of each talk's publish date. Data: `weeks-data/aie-<monday>.json`
 (derived summaries and concepts only — never transcripts, private URLs or local paths).
 Working files: `classic/index.html#aie-<videoid>` (talk cards) and `classic/concepts.html` (anchors `#c-<week>-<n>`).
-Public pages: `week-NN.html#t-<videoid>` (talks) and `ideas.html#c-<week>-<n>` (concepts).
+Public pages: `week-NN.html#t-<videoid>` (talks) and `week-NN.html#idea-<week>-<n>` (concepts, in the Talks view).
 
 ```bash
 # weekly, before or after add_week.py build (save the Hermes preview to a local file first,
