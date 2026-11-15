@@ -2,7 +2,12 @@
 
 > Renamed on Nov 15, 2026. The public pages say **Caught Up**, with the line "Catching up with AI, one week at a time."
 > The name and the line are the constants `NAME` and `TAGLINE` at the top of `redesign/build.py`.
-> The repo name, the `classic/` page and the browser storage keys (`drift.*`) keep the old name.
+> The repo was renamed from `drift-unified-prototype` to `caught-up` the same day. The site address is now
+> https://flaviusapop.github.io/caught-up/ ; the old address no longer serves the site.
+> A local checkout keeps working (GitHub forwards the old git address), but set the new one once:
+> `git remote set-url origin https://github.com/flaviusapop/caught-up.git`. The local folder name
+> (`/workspace/drift-unified-prototype` in the commands below) does not need to change.
+> The `classic/` page and the browser storage keys (`drift.*`) keep the old name.
 
 > As of Oct 25, 2026 this is the official Drift version we keep updating (Zander). The older notes below are kept for history.
 
@@ -38,7 +43,7 @@ the live sites:
 - Live Drift: https://flaviusapop.github.io/ai-digest/drift.html (repo `flaviusapop/ai-digest`)
 - Live learning plan: https://flaviusapop.github.io/weekly-ai-learning-plan/ (repo `flaviusapop/weekly-ai-learning-plan`)
 
-Live prototype: https://flaviusapop.github.io/drift-unified-prototype/
+Live prototype: https://flaviusapop.github.io/caught-up/
 
 ## Idea
 
@@ -82,7 +87,7 @@ structure/headline. Neither is a new collected edition.
 3. Rename briefs: search for `Brief A` / `Brief B` once final names land.
 4. Publish: `git add -A && git commit -m "..." && git push` — GitHub Pages
    serves `main` / root, redeploys in ~1 min.
-5. Verify: `curl -s -o /dev/null -w '%{http_code}\n' https://flaviusapop.github.io/drift-unified-prototype/`
+5. Verify: `curl -s -o /dev/null -w '%{http_code}\n' https://flaviusapop.github.io/caught-up/`
 
 ## Add a week (repeatable)
 
@@ -122,7 +127,7 @@ python3 add_week.py build $PLAN $START
 
 # 4. Publish + verify (Pages redeploys in ~1 min)
 git add -A && git commit -m "Add Week NN" && git push
-sleep 75 && curl -s https://flaviusapop.github.io/drift-unified-prototype/ | grep -c 'id="wk-NN"'
+sleep 75 && curl -s https://flaviusapop.github.io/caught-up/ | grep -c 'id="wk-NN"'
 ```
 
 Re-running `build` for the same week replaces that week in place. Week ids are
