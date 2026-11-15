@@ -22,8 +22,8 @@ import argparse, datetime as dt, html, json, pathlib, re, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent
 WDATA = ROOT / "weeks-data"
-INDEX = ROOT / "index.html"
-CONCEPTS = ROOT / "concepts.html"
+INDEX = ROOT / "classic" / "index.html"        # working file; the public site is generated from it by redesign/build.py
+CONCEPTS = ROOT / "classic" / "concepts.html"
 CHANNEL = "https://www.youtube.com/@aidotengineer"
 YT = re.compile(r"^https://www\.youtube\.com/watch\?v=([A-Za-z0-9_-]{11})$")
 HUE = "mlreddit"
@@ -311,6 +311,8 @@ def cmd_render(a):
     INDEX.write_text(src)
     write_concepts()
     print("rendered Brief C for weeks:", ", ".join(str(w["week"]) for w in weeks))
+    import subprocess  # regenerate the public pages from classic/index.html and weeks-data/
+    subprocess.run([sys.executable, str(ROOT / "redesign" / "build.py")], check=True)
 
 # ---------------------------------------------------------------- concepts page
 def write_concepts():

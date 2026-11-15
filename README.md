@@ -2,6 +2,31 @@
 
 > As of Oct 25, 2026 this is the official Drift version we keep updating (Zander). The older notes below are kept for history.
 
+## Site layout since Nov 15, 2026 (redesign)
+
+The public site is now **generated**. The weekly routine below is unchanged: same commands, same order.
+
+- `classic/index.html` is the working file. `add_week.py build` and `aie_brief.py render` edit it exactly as
+  they edited `index.html` before. `classic/` also holds the old `style.css`, `app.js` and `concepts.html`;
+  the old single page stays viewable at `/classic/`.
+- `redesign/build.py` reads `classic/index.html` and `weeks-data/aie-*.json` and writes the public pages at the
+  repo root: `index.html` (the newest week), `week-NN.html` (one per week), `ideas.html`, `search.html`,
+  `search-data.js`, `concepts.html` (redirect to `ideas.html`) and `assets/`.
+  **Both scripts call it at the end**, so there is no extra step. To run it alone: `python3 redesign/build.py`.
+- Never edit the root `*.html`, `search-data.js` or `assets/` by hand: the next build overwrites them.
+  Design changes go in `redesign/src/style.css`, `redesign/src/app.js` and `redesign/build.py`.
+- Each week page has four views: Start here, Plan (Brief A), Reddit (Brief B), Talks (Brief C).
+  Old anchors still work from `index.html`: `#wk-NN`, `#learning-NN`, `#reddit-NN`, `#aie-NN`, `#aie-<videoid>`.
+- If `redesign/build.py` fails, the script exits with an error after `classic/index.html` is already updated.
+  Do not publish in that state: fix or report the error, then rerun `python3 redesign/build.py`.
+  The build prints one line per week (plan items, threads kept, talks); a week showing `plan 0 items` or
+  `reddit None` that should have content means the parser did not recognise the block.
+- `redesign/build.py` depends on the HTML structure `add_week.py` and `aie_brief.py` write (class names such as
+  `wk`, `src`, `grp`, `grph`, `tcard`, `badge`, `subsrc`, `bbsynth`, `tc-item`). If that markup changes, update the
+  parser in `redesign/build.py` in the same commit.
+- Fonts (Recia, Supreme) load from the Fontshare CDN; no font files are in the repo.
+- Known limit: weeks are keyed by ISO week number only (`week-46.html`), so a second year needs a naming change.
+
 **Prototype only.** A third, separate site to iterate on Zander's unified
 2-brief-per-week idea in the Drift design. It does **not** replace or modify
 the live sites:
@@ -57,8 +82,8 @@ structure/headline. Neither is a new collected edition.
 
 ## Add a week (repeatable)
 
-One script, `add_week.py`, adds or replaces one Mon–Sun week on `index.html`
-(newest first). It never touches other weeks. Inputs: the week's learning-plan
+One script, `add_week.py`, adds or replaces one Mon–Sun week on `classic/index.html`
+(newest first), then regenerates the public pages with `redesign/build.py`. It never touches other weeks. Inputs: the week's learning-plan
 markdown (Brief A) and the Monday start date. Brief B (Reddit) has an agent
 curation step in the middle.
 
@@ -87,7 +112,8 @@ python3 add_week.py collect $START
 python3 add_week.py comments $START   # 1 call per kept thread, cached
 #    -> data-cache/$START/comments.md ; put 1-2 comment ids in each thread's "quotes"
 
-# 3. Build: insert/replace the week block, jump-list row, weeks/$START.html redirect
+# 3. Build: insert/replace the week block in classic/index.html, jump-list row, weeks/$START.html redirect,
+#    then regenerate index.html, week-NN.html, ideas.html and the search index (redesign/build.py)
 python3 add_week.py build $PLAN $START
 
 # 4. Publish + verify (Pages redeploys in ~1 min)
@@ -105,14 +131,15 @@ Cost: about (10 + kept threads) calls × $0.002.
 Talk summaries from the AI Engineer YouTube channel (https://www.youtube.com/@aidotengineer),
 placed in the Mon–Sun week of each talk's publish date. Data: `weeks-data/aie-<monday>.json`
 (derived summaries and concepts only — never transcripts, private URLs or local paths).
-Concepts page: `concepts.html` (anchors `#c-<week>-<n>`); talk cards: `index.html#aie-<videoid>`.
+Working files: `classic/index.html#aie-<videoid>` (talk cards) and `classic/concepts.html` (anchors `#c-<week>-<n>`).
+Public pages: `week-NN.html#t-<videoid>` (talks) and `ideas.html#c-<week>-<n>` (concepts).
 
 ```bash
 # weekly, before or after add_week.py build (save the Hermes preview to a local file first,
 # outside the repo; never commit it or its URL)
 python3 aie_brief.py import-preview /path/outside/repo/preview.html  # places talks by publish date, skips ids already on any week
 python3 aie_brief.py check                    # duplicates, link/id pairing, leak scan
-python3 aie_brief.py render                   # (re)writes Brief C in every week that has data + concepts.html
+python3 aie_brief.py render                   # (re)writes Brief C in classic/ for every week with data, then regenerates the public pages
 ```
 
 `add_week.py build` keeps Brief C automatically when `weeks-data/aie-<monday>.json` exists

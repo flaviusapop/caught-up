@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search · Drift</title>
+<meta name="description" content="Search every week of Drift.">
+<meta name="color-scheme" content="light dark">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=recia@1&amp;f[]=supreme@1&amp;display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script>(function(){var d=document,r=d.documentElement,V=['start','plan','reddit','talks'];r.classList.add('js');
+try{var t=localStorage.getItem('drift.theme');if(t)r.dataset.theme=t;if(localStorage.getItem('drift.titles')==='1')r.dataset.density='compact'}catch(e){}
+var h0=decodeURIComponent(location.hash.slice(1));r.dataset.view=V.indexOf(h0)>-1?h0:'start';
+function set(v){r.dataset.view=v;var a=d.querySelectorAll('.tabs a');for(var i=0;i<a.length;i++){if(a[i].getAttribute('href')==='#'+v)a[i].setAttribute('aria-current','page');else a[i].removeAttribute('aria-current')}}
+function resolve(){var h=decodeURIComponent(location.hash.slice(1));if(!h){set('start');return}
+if(V.indexOf(h)>-1){set(h);return}
+var el=d.getElementById(h);if(!el&&h.indexOf('aie-')===0)el=d.getElementById('t-'+h.slice(4));if(!el)return;
+var p=el.closest('.panel');if(p)set(p.id);
+for(var x=el;x;x=x.parentElement)if(x.tagName==='DETAILS')x.open=true;
+el.scrollIntoView()}
+d.addEventListener('DOMContentLoaded',resolve);window.addEventListener('load',function(){if(V.indexOf(decodeURIComponent(location.hash.slice(1)))>-1)window.scrollTo(0,0)});window.addEventListener('hashchange',resolve);window.addEventListener('popstate',resolve);
+d.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.tabs a, a.to-view');if(!a)return;
+var h=a.getAttribute('href').slice(1);if(V.indexOf(h)<0)return;e.preventDefault();history.pushState(null,'','#'+h);set(h);
+var tb=d.querySelector('.tabs'),p=d.getElementById(h);if(tb&&p&&(tb.getBoundingClientRect().top<=1||a.classList.contains('to-view')))window.scrollTo(0,p.getBoundingClientRect().top+window.scrollY-tb.offsetHeight-16)});
+})();</script>
+</head>
+<body>
+<!--
+THESIS: One week is one page with four views (Start here, Plan, Reddit, Talks), not seven weeks stacked on one scroll. Refuses the endless feed with everything unfolded.
+OWN-WORLD: Eye-ease ledger paper. Pale green ground, green-black ink, ballpoint-blue links, a highlighter stroke for "you are here". A left margin column carries the one number that matters per row (minutes, points, date) with a tick box under it. Section bands instead of rules. Recia for titles, Supreme for text and figures.
+STORY: The reader knows in a minute what the week said, what to change, what to watch first; then works the plan against a time budget and ticks items off.
+FIRST VIEWPORT: Week number at display size with its date range; one sentence tallying the week; four tabs; the week's lead sentence; the action list. Week ledger in the left rail on desktop.
+FORM: Ledger / run sheet. Chosen from seven candidates grounded in a trader's and product owner's paperwork; the seed script printed nothing on this machine, so no roll was dealt.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-check" viewBox="0 0 20 20"><path d="M4.6 10.6l3.5 3.5 7.3-8.1" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-out" viewBox="0 0 20 20"><path d="M6 14l8-8M7.5 6H14v6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-prev" viewBox="0 0 20 20"><path d="M12 4.5L6.5 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-next" viewBox="0 0 20 20"><path d="M8 4.5l5.5 5.5L8 15.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-open" viewBox="0 0 20 20"><path d="M5 7.5l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+<symbol id="i-search" viewBox="0 0 20 20"><circle cx="8.8" cy="8.8" r="5.3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12.9 12.9l3.6 3.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+</defs></svg>
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <a class="mark" href="index.html" aria-label="Drift, latest week">Drift</a>
+  
+  <form class="find" action="search.html" role="search">
+    <label class="vh" for="q">Search all weeks</label>
+    <svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="q" name="q" type="search" placeholder="Search all weeks" autocomplete="off">
+  </form>
+  <div class="bar-t">
+    <a href="ideas.html">Ideas</a>
+    <button type="button" class="txt" data-titles aria-pressed="false">Titles only</button>
+    <button type="button" class="txt" data-theme-toggle>Night</button>
+  </div>
+</header>
+<div class="frame">
+<main id="main">
+<header class="wkhead"><h1>Search</h1><p class="wk-d">Plans, Reddit threads, talks and ideas across every week</p></header><form class="tools tools-col" action="search.html" role="search"><label class="filter filter-l"><span class="vh">Search all weeks</span><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input type="search" name="q" data-search-q placeholder="Try evals, sandbox, Sierra Chart" autocomplete="off"></label><span class="tools-s" data-search-status aria-live="polite">Type at least two letters.</span></form><div data-search-out></div><noscript><p class="none">Search needs JavaScript. Every week is still readable from the list of weeks.</p></noscript>
+</main>
+<aside class="ledger" id="weeks" aria-label="All weeks">
+  <table>
+    <caption>All weeks</caption>
+    <thead><tr><th scope="col">Week</th><th scope="col">Plan</th><th scope="col">Reddit</th><th scope="col">Talks</th></tr></thead>
+    <tbody><tr><th scope="row"><a href="week-46.html"><b>46</b> <span>Nov 9 – 15</span></a></th><td>10.5 h</td><td>18</td><td>38</td></tr><tr><th scope="row"><a href="week-45.html"><b>45</b> <span>Nov 2 – 8</span></a></th><td>8 h</td><td>21</td><td>42</td></tr><tr><th scope="row"><a href="week-44.html"><b>44</b> <span>Oct 26 – Nov 1</span></a></th><td>10 h</td><td>14</td><td>36</td></tr><tr><th scope="row"><a href="week-43.html"><b>43</b> <span>Oct 19 – 25</span></a></th><td>10 h</td><td>13</td><td>40</td></tr><tr><th scope="row"><a href="week-42.html"><b>42</b> <span>Oct 12 – 18</span></a></th><td>10 h</td><td>13</td><td>49</td></tr><tr><th scope="row"><a href="week-41.html"><b>41</b> <span>Oct 5 – 11</span></a></th><td>10 h</td><td><span aria-label="not collected">–</span></td><td>85</td></tr><tr><th scope="row"><a href="week-40.html"><b>40</b> <span>Sep 28 – Oct 4</span></a></th><td><span aria-label="not collected">–</span></td><td><span aria-label="not collected">–</span></td><td>25</td></tr></tbody>
+  </table>
+  <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries.</p>
+  <p class="ledger-l"><a href="ideas.html">Ideas across weeks</a></p>
+</aside>
+</div>
+<footer class="foot">
+  <p>The learning plan comes from the published Weekly AI learning plan editions. Reddit is collected each week, read-only, from the same ten subreddits; threads are kept for real signal, not score alone. Talk summaries are machine-generated drafts from the <a href="https://www.youtube.com/@aidotengineer" target="_blank" rel="noopener">AI Engineer YouTube channel</a>, not human-reviewed; claims belong to the speakers.</p>
+  <p>What you tick off is stored only in this browser. The earlier single-page layout is still at <a href="classic/index.html">classic view</a>.</p>
+</footer>
+<script src="assets/app.js" defer></script>
+<script src="search-data.js" defer></script>
+</body>
+</html>
