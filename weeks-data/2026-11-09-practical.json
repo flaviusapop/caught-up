@@ -43,7 +43,7 @@
       "native_score": 652,
       "percentile": 1.0,
       "summary": "Nyxera says they gave Claude Fable 5.2 one picture of a PS5 controller and got back a tour that splits the controller apart in 24 seconds. They say the skill, teardown, makes Claude work out the motion as math before it draws any part, check a still at every beat, then record the tour. Their written steps: install teardown with one `npx` line, open Claude Code, type `/teardown`, give it one picture, let it check the stills, then record the tour.",
-      "try_it": "If you make product or brand explainers, install the teardown skill from @elvar_official’s post, run `/teardown` on one well-lit product photo, and check whether the exploded view is accurate enough to keep. Do not treat the 24-second claim as a guarantee.",
+      "try_it": "If you make product or brand explainers, install the teardown skill (announced by @elvar_official), run `/teardown` on one well-lit product photo, and check whether the exploded view is accurate enough to keep. Do not treat the 24-second claim as a guarantee.",
       "caveats": "Several accounts posted near-identical “I gave it one photo” copy the same week, so treat this as a promo wave around the skill, not a unique field report. The author’s 24-second result was not independently checked. The exact GitHub path was not in this post, so it is not given here. The original skill announcement appears to predate this week; this is the highest-engagement use of it inside the window. @elvar_official’s own week 46 demo (a Starlink dish) scored 114 and was not double-counted."
     },
     {
@@ -204,7 +204,10 @@
       "community": "r/ClaudeAI",
       "url": "https://reddit.com/r/ClaudeAI/comments/1xw2fu8/i_turned_karpathys_80_of_the_way_to_asdste100_tip/",
       "posted_at": null,
-      "engagement": null,
+      "engagement": {
+        "score": 159,
+        "comments": 23
+      },
       "native_score": 205,
       "percentile": 0.462,
       "summary": "Repo: https://github.com/Dodaios/ste80-humanizer.",
