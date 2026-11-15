@@ -1,0 +1,298 @@
+{
+ "headline": "An agent deleted its own repo at 5:46 AM, “done” turned out to be the hard part, and an LLM trader lost 8 of 8 but only 72 cents.",
+ "executive_read": [
+  "The most useful threads this week were about <strong>when a task is really done</strong>. One builder found five of seven “successful” uploads were pulled by the platform within a minute, so “done” now means three checks: an id comes back, a separate read agrees, and a person can open it. Another spent three weeks automating “did the assistant actually do the thing” and found that <strong>even two careful judges agreed on only 6 of 10</strong> rows; the only label that held was a typed record, not a sentence.",
+  "The trading thread came with a cage worth copying: an agent with a ~$60 wallet went <strong>0 for 8 but lost only $0.72</strong>, because the model never holds the key (a separate signer checks, simulates and caps $3 per trade, $10 per day), stop-loss and take-profit run in plain code every 30 seconds, and any cycle woken by outside text loses its money tools. It also logged a 7-cent loss as a +1,198,901% win — the model was grading its own P&L.",
+  "Security and cost stayed concrete. Claude Code (Opus 5.5 with a Fable 5.2 advisor) ran <code>find $tmp -delete</code> with an empty variable and <strong>wiped a repo root including .git</strong>; the fix in the thread is <code>${tmp:?}</code> in the shell, not a prompt rule. In r/OpenClaw, an email-agent builder showed that a “sender verified” line inside the email can be forged — trust only your own server’s Authentication-Results header. A Cursor user reported $2,829 of on-demand charges in one week from requests with no agent id. The Fable 5.2 launch dominated r/ClaudeAI and r/ClaudeCode by score; r/Hermes was about the god and r/ChatGPT was memes, so both kept nothing."
+ ],
+ "for_our_setup": [
+  "Define “done” per action, by how hard it is to undo: a returned id is not proof. For anything other people see (a sent message, a published item, a calendar change), read it back from the target system, and add a later sweep for late rejections.",
+  "Keep money and P&L outside the model: a separate process holds keys and limits, plain code runs exits, and a different process recomputes results from an immutable ledger. This applies directly to any trade-review or alerting bot.",
+  "Guard every shell cleanup in scripts the bots run: use \"${var:?}\" before rm or find -delete, run shellcheck, and keep snapshots or a remote outside the checkout so one bad command cannot take .git with it.",
+  "For any bot that reads email, ignore what the message says about its own sender; trust only the Authentication-Results header your own provider adds, and never let an email alone trigger a payment or a share.",
+  "Put a hard spend cap or a virtual card on every pay-per-use AI account (Cursor on-demand, OpenRouter), and revoke unused API keys and connected apps; check cache-read price, not only input/output price, when picking a model for an always-on agent."
+ ],
+ "subs": {
+  "hermesagent": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xs9oyc",
+     "summary": "A beginner paying about $3 a day to chat with Hermes (GLM 5.3 Flash, low reasoning) found three causes and cut cost about 80%. The memory add-on Byterover ran 12 extra calls on every reply (shown as “unknown” on OpenRouter); turning off auto-extract fixed that. OpenRouter’s default routing picked neither the cheapest nor the most efficient providers, so they set routing to cheapest and blocked two providers that wasted tokens. Most important: with an always-on agent the cache-read price matters far more than the in/out price, so DeepSeek v4.1 Flash beat a model that looked cheaper but had no cache discount.",
+     "kp": [
+      "Memory plugins can multiply calls per reply; make saves deliberate.",
+      "Compare cache-read price, not headline input/output price, for agents that resend long context.",
+      "Commenters add OpenRouter presets or the :floor suffix to force the cheapest provider, and one reports ~5B tokens a month (95% cached) for $10."
+     ],
+     "quotes": [
+      "19sfiljwdeejl",
+      "19sf4whd0nuhu"
+     ]
+    },
+    {
+     "id": "1xrswbe",
+     "summary": "The poster wants a Hermes assistant that runs every 5–10 minutes over email, calendar and messages, remembers what it already said, and only pings when something deserves attention — like ChatGPT Dots noticing that a brief changed before a meeting. The useful answers: move the memory out of the model into a small state file the cron job reads and rewrites each run, and log each proactive message with why it was raised and its sources so a weekly job can tune the heartbeat.",
+     "kp": [
+      "Cron is the easy part; the hard part is state between runs and a rule for what is worth a ping.",
+      "A JSON state file of what was already flagged prevents repeat notifications.",
+      "One user logs Dots-style messages with reasons and sources, then has Hermes learn from the log weekly."
+     ],
+     "quotes": [
+      "19sdr0r3q4y3l",
+      "19sdott3235b4"
+     ]
+    },
+    {
+     "id": "1xtias1",
+     "summary": "A day-one Hermes user on a VPS who now also uses Grok Bot asked Hermes to turn itself into a Grok Bot look-alike and hit a wall: Google re-auth, Gmail, SSH callbacks, web forms and sign-ins all broke. Replies explain why: headless browsers are detected and lack display drivers, and every login has to be wired by hand. Suggestions are one auth/MCP gateway for all logins, or a custom messaging app behind Cloudflare Access; several people say the effort still lands short of Grok Bot.",
+     "kp": [
+      "The gap is not the model; it is auth, real browsers and sign-ins.",
+      "Concentrating logins behind one MCP endpoint makes it easier to switch agents later.",
+      "A useful outside view on what Grok Bot’s managed box and connectors save you from building."
+     ],
+     "quotes": [
+      "19shabsqo9tmr",
+      "19sh7t792kev9"
+     ]
+    }
+   ]
+  },
+  "Hermes": {
+   "note": "collected this week (15 fetched, 13 in the window): this subreddit is about the god Hermes (altars, offerings, signs), not AI agents. Nothing substantive for Brief B this week.",
+   "threads": []
+  },
+  "OpenClaw": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xtk31q",
+     "summary": "An email-agent builder points out that most setups trust a “this sender was verified” line inside the email — but the sender writes the email and can add that line. In their own product the real stamp and a forged one arrived side by side and looked identical to their code. The fix: ignore anything an email says about itself and trust only the check your own mail provider ran on arrival.",
+     "kp": [
+      "Trust only the Authentication-Results header your own receiving server adds (SPF/DKIM/DMARC aligned with From); strip copies further down.",
+      "A real account that was phished still passes that check, so keep the sender out of money decisions entirely.",
+      "If an agent can pay an invoice or share a file because “the CEO asked”, check this first."
+     ],
+     "quotes": [
+      "19shkgudmtyf7",
+      "19shd9qa1vjia"
+     ]
+    },
+    {
+     "id": "1xrvr49",
+     "summary": "A team deploying OpenClaw for clients says PR #172590 (v2026.10.10) locked each scheduled automation to one provider account, so fallbacks to another vendor are refused — a problem when a vendor outage takes all its models down or a subscription runs out. The P1 regression report was closed as a duplicate by a bot 8 minutes later; the remaining issue sits at P2, unassigned. They paused new OpenClaw deployments and test automations on Hermes instead. A maintainer replied that they are reviewing it.",
+     "kp": [
+      "Multi-vendor failover is a requirement for scheduled jobs that must run.",
+      "A commenter handles failover outside the framework: a small wrapper re-runs a failed job with another vendor’s config.",
+      "Framework fallback logic has changed several times; don’t depend on it for critical jobs."
+     ],
+     "quotes": [
+      "19sf6uy3moso0",
+      "19sf51fso15b9"
+     ]
+    },
+    {
+     "id": "1xv7uky",
+     "summary": "An OpenClaw user on a Hetzner VPS with Slack, separate main/dev/PM agents and MCP tools says agents keep forgetting context and decisions, and fallback models make it worse; locally, Claude Code or Cursor is far more productive. Replies converge on a split: the coding harness does the coding loop, the always-on agent takes requests, tracks progress, checks results and only pings when needed. One long-time user has agents build deterministic pipelines and cron jobs, then only observe and improve them.",
+     "kp": [
+      "Use the always-on agent as orchestrator and checker, not as the coder.",
+      "Running Claude Code as a subprocess loses the orchestrator’s own context files — a real trade-off.",
+      "“Agents build deterministic automation, then watch it” beats agents doing every task live."
+     ],
+     "quotes": [
+      "19skukdrw14u9",
+      "19skvtw3aswqs"
+     ]
+    }
+   ]
+  },
+  "AI_Agents": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xslydj",
+     "summary": "An agent with a real ~$60 wallet must pay its own inference. After two weeks: 8 trades, 0 wins, −$0.72 total, $1.02 for 192 thinking cycles. The losses stayed small by design: the model never holds the key (a separate signer decompiles, whitelists, simulates and caps $3 per trade and $10 per day); stop-loss and take-profit run in a 30-second loop with no LLM; cycles woken by outside text don’t get money or memory tools at all. 81% of “thoughts” are templates and the paid model sleeps when there is nothing to decide. It also logged a 7-cent loss as a +1,198,901% win.",
+     "kp": [
+      "Limits live where the model can’t reach: a signer process, not a prompt.",
+      "Exits in plain code; the model writes a thesis going in and is bad at admitting it was wrong.",
+      "Commenters: the P&L bug means the model graded its own trade — recompute P&L from an immutable ledger in code."
+     ],
+     "quotes": [
+      "19sft60i5thfl",
+      "19sfjuwzp24xv"
+     ]
+    },
+    {
+     "id": "1xv1d8k",
+     "summary": "An agent that publishes across several channels returned a successful upload with a real id; 36 seconds later the item was unavailable, and five of seven attempts had failed the same way while looking fine. Now “done” needs three things: the write returns an id, an independent read confirms it, and a person can open it. It caught two more bad runs that week. The open question is where to set the bar for lower-risk actions.",
+     "kp": [
+      "Commenters scale checks by how hard the action is to undo, not just how visible it is.",
+      "Add a scheduled sweep that flips “done” back to failed if the item disappears later.",
+      "Check the read before the write too; a stale count poisons every later check."
+     ],
+     "quotes": [
+      "19skwgaharah1",
+      "19skn4x898yx1"
+     ]
+    },
+    {
+     "id": "1xt52j1",
+     "summary": "A builder spent three weeks automating “did the assistant actually finish what it promised”: extract commitments, find a later sentence saying it was done, close it. A blind judge model scored 11 of 20 on hidden controls; the author agreed with only 5 of 10 disputed rows of their own ground truth; two careful judges agreed on 6 of 10. Conclusion: “does this sentence mean the job is done” has no stable answer. What survived is closing items only when the user says so, plus a warning to list what else could produce your metric before you trust it.",
+     "kp": [
+      "If completion is judged from prose, your label moves; give the output a shape (a tool call that writes a task row).",
+      "Anything checkable goes to code; anything needing judgment goes to a human list — the agent never marks it done itself.",
+      "Their “confirmation rate” counted never-seen as rejected — check what else could make the number move."
+     ],
+     "quotes": [
+      "19sgdt8xlad6r",
+      "19sgdnfyz2szo"
+     ]
+    }
+   ]
+  },
+  "ClaudeAI": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xt44ar",
+     "summary": "A Marine veteran turned lawyer used Claude (Claude Code with Opus 5.5 and Fable 5.1) to crawl the Defense Department’s unsorted decision folders, download more than 300,000 public military board decisions, extract text including from scans, pull the key fields, and build a free searchable Reading Room with filters by board, discharge type, outcome and dozens of codes. It opened Oct 2, the day after a congressional deadline passed with nothing from DoD, and is now evidence in a federal lawsuit. Example from the post: the Navy board’s own search for “PTSD” returned 211; the files contain the term in at least 13,085.",
+     "kp": [
+      "A non-engineer domain expert ran a multi-day crawl-extract-index pipeline with an agent.",
+      "The receipts come from comparing the agent-built index against the official search.",
+      "Many passes “hunting for anomalies” were part of the process, not a one-shot build."
+     ],
+     "quotes": [
+      "19shd2yqba8o2",
+      "19sgw1nul1xlu"
+     ]
+    },
+    {
+     "id": "1xus0wz",
+     "summary": "A developer with 20 years’ experience built Mend, a fly-fishing game on real Alberta and BC rivers, with Claude, and filled in Steam’s AI disclosure honestly (AI voices, one menu song, AI-assisted text; procedural 3D, no image generators). In several subreddits the disclosure became the thread, and people assumed the art was AI too. They priced human replacements at about $2,000 USD (many quotes over $5,000) for a $13.99 game, and note that with text-to-speech a changed line is free, which matters because they patch constantly.",
+     "kp": [
+      "Disclosure is read as a signal about the whole product, not the listed parts.",
+      "Cost of replacing AI assets is concrete: ~$2k for ~28 minutes of voice and one track.",
+      "Iteration speed (free line changes) is a real reason to keep TTS beyond price."
+     ],
+     "quotes": [
+      "19sjpjh8uzmaq",
+      "19sjsm7d5jbfl"
+     ]
+    }
+   ]
+  },
+  "ClaudeCode": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xsp90d",
+     "summary": "Claude Code (Opus 5.5 with a Fable 5.2 advisor) sent a 5:46 AM “urgent” message: it had deleted the main repository folder, including .git and every worktree’s history. Cause: a temp-path variable was never set, so the cleanup <code>find $tmp -delete</code> ran on the current folder — the repo root. The owner had snapshots and a remote, so loss was limited to uncommitted work. Takeaways: add more frequent btrfs snapshots, let Claude push to a remote dev branch, and guard in the shell with \"${tmp:?temp path missing}\".",
+     "kp": [
+      "Put the guard in the command, not in an instruction to the model.",
+      "shellcheck flags this exact bug (SC2115).",
+      "A dedicated dev box with nothing valuable on it is one commenter’s answer to full autonomy."
+     ],
+     "quotes": [
+      "19sfixpl0w2x1",
+      "19sfpbzcdtxa9"
+     ]
+    },
+    {
+     "id": "1xw7ylh",
+     "summary": "After an estimated 4,500 hours with AI coding tools, the author’s fix for the same four failures (self-approving plans, over-engineering, claiming tests pass without running them, touching files it shouldn’t) is process: one global CLAUDE.md that sends architectural changes through a pipeline and requires approval for anything destructive or financial, plus three appended prompts — plan and stop, critique in a fresh context, and a readiness audit of git status/diff and real test runs. Many comments call it basic; the most-upvoted constructive point is that instructions are not enforcement — use permissions and hooks.",
+     "kp": [
+      "“Trust the diff, not the agent’s summary.”",
+      "Critique in a fresh context or subagent to avoid self-confirmation.",
+      "Approval gates written as prompts are suggestions; hooks and permission settings enforce."
+     ],
+     "quotes": [
+      "19smtutxi1yg3",
+      "19smvjvhwoj35"
+     ]
+    },
+    {
+     "id": "1xv6v7h",
+     "summary": "The “database person” on every team for ten years watched a junior fix a slow query by asking Claude, which read the plan and suggested a partial index and a rewrite — correctly, without the junior knowing why. The post asks what deep experts move to. Top answers: knowing why it is right and when it is wrong, the history of business decisions behind a system, and owning outcomes — though several seniors say even that is shrinking.",
+     "kp": [
+      "A clear signal of where specialist value is moving: judgment, context and accountability.",
+      "Relevant to how a product owner frames roles on an agent-heavy team."
+     ],
+     "quotes": [
+      "19skpamkqny5e",
+      "19skpso49mzl0"
+     ]
+    }
+   ]
+  },
+  "cursor": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xtphvt",
+     "summary": "A Cursor user who normally spends under $100 a month was billed 23 invoices totalling $2,829.91 between Oct 17 and 23: 303 on-demand requests, mostly Claude Opus 5.5 Max, some using 100–157 million tokens and $40–60 each, running overnight. None had a cloud agent id, the user never picked those models, and the charges stopped the moment on-demand was disabled. Support has not replied in nearly three weeks.",
+     "kp": [
+      "Commenters read it as account or key misuse, not a glitch: revoke API keys and connected apps, check Google sign-ins.",
+      "Cursor reportedly lacks 2FA for Google sign-ins.",
+      "Use a virtual card with a fixed limit for pay-per-use AI tools."
+     ],
+     "quotes": [
+      "19shtwbdcvwar",
+      "19si3qco0osao"
+     ]
+    },
+    {
+     "id": "1xtifli",
+     "summary": "A user ran a 40–50 turn multi-file refactor in Cursor Agent mode with deterministic tests after each turn. Up to turn 12–15 it tracked constraints; around turns 18–22 it re-introduced fixed bugs, hallucinated function signatures from early files, and dropped initial constraints. In the thread the author confirmed from per-turn token logs that the cliff follows token volume, not turn count.",
+     "kp": [
+      "Move hard constraints into an always-applied rules file; opening-message rules become old history.",
+      "Start fresh sessions that read short rules/plan/log files instead of running one long chat.",
+      "Before each edit, have the agent quote the current signature from disk, not memory."
+     ],
+     "quotes": [
+      "19shejt75qmtg",
+      "19shgl7goct8h"
+     ]
+    }
+   ]
+  },
+  "LocalLLaMA": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xwegdi",
+     "summary": "An engineer who builds production harnesses argues frontier models have become much more useful but not much smarter: once a harness hit its golden-set score, newer models rarely improved it; most failures were context engineering or tools; the same model varies a lot across harnesses; and small local models now do well when the knowledge is provided. Comments largely agree (better trained, not smarter out of distribution); one ML practitioner disagrees, citing a big jump to Opus 5.5.",
+     "kp": [
+      "Before switching models, check whether the harness, context and tools are the real limit.",
+      "A golden dataset per workflow is what lets you tell.",
+      "Speed and cost (a fast cheap model) often beat a smarter slow one in production."
+     ],
+     "quotes": [
+      "19sn8ru0mvyo2",
+      "19sn75tqec7k1"
+     ]
+    }
+   ]
+  },
+  "ChatGPT": {
+   "note": "collected this week (100 fetched, 92 in the window): memes, AI video jokes and Jensen Huang posts. Nothing substantive for Brief B this week.",
+   "threads": []
+  },
+  "OpenAI": {
+   "note": "",
+   "threads": [
+    {
+     "id": "1xvd1ci",
+     "summary": "A link post to OpenAI’s ChatGPT Wallet announcement. Per a commenter quoting it, the user reviews items, total and card before each purchase and approves with Face ID or a fingerprint; the agent automates the shopping, not the final approval. Comments question who needs it and predict retailers will resist agents that skip sponsored listings.",
+     "kp": [
+      "Vendor launch: noted for the approval pattern (human confirms the final total), not as a recommendation.",
+      "Matches the approve-first rule for any agent that spends money."
+     ],
+     "quotes": [
+      "19sl5ndmjixpd",
+      "19slym05gsjl1"
+     ]
+    }
+   ]
+  }
+ },
+ "method": "Collected top-of-week posts for Nov 9–15, 2026 (one call per subreddit, then one per kept thread for comments). Kept threads for workflows, measured failures, cost, memory or security — not score alone. Comment trees came back this week, so each thread has quotes. Summaries use each post’s own text; the ChatGPT Wallet item is a link post, so it is summarized from the title and the comment thread only."
+}
