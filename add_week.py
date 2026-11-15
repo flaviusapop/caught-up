@@ -36,7 +36,7 @@ except ImportError:  # pragma: no cover
 ROOT = pathlib.Path(__file__).resolve().parent
 CACHE = ROOT / "data-cache"
 WDATA = ROOT / "weeks-data"
-INDEX = ROOT / "index.html"
+INDEX = ROOT / "classic" / "index.html"   # working file; the public site is generated from it by redesign/build.py
 KEYFILE = pathlib.Path("/home/box/.config/redditapis.env")
 API = "https://api.redditapis.com/api/reddit"
 COST = 0.002
@@ -384,6 +384,12 @@ def cmd_build(a):
 ''')
     print(f"Week {wk} built: Brief A '{title_a}', Brief B {kept} threads kept"
           + (f", Brief C {len(aie['videos'])} talks" if aie else ""))
+    rebuild_site()
+
+def rebuild_site():
+    """Regenerate the public pages (index.html, week-NN.html, ideas.html, search) from classic/index.html."""
+    import subprocess
+    subprocess.run([sys.executable, str(ROOT / "redesign" / "build.py")], check=True)
 
 # ---------------------------------------------------------------- main
 def main():
