@@ -25,6 +25,7 @@ The public site is now **generated**. The weekly routine below is unchanged: sam
 - Never edit the root `*.html`, `search-data.js` or `assets/` by hand: the next build overwrites them.
   Design changes go in `redesign/src/style.css`, `redesign/src/app.js` and `redesign/build.py`.
 - Each week page has four views: Start here, Plan (Brief A), Reddit (Brief B), Talks (Brief C).
+  Start here opens with the Practical block when the week has one (see "Practical section" below).
   Old anchors still work from `index.html`: `#wk-NN`, `#learning-NN`, `#reddit-NN`, `#aie-NN`, `#aie-<videoid>`.
 - If `redesign/build.py` fails, the script exits with an error after `classic/index.html` is already updated.
   Do not publish in that state: fix or report the error, then rerun `python3 redesign/build.py`.
@@ -35,6 +36,71 @@ The public site is now **generated**. The weekly routine below is unchanged: sam
   parser in `redesign/build.py` in the same commit.
 - Fonts (Recia, Supreme) load from the Fontshare CDN; no font files are in the repo.
 - Known limit: weeks are keyed by ISO week number only (`week-46.html`), so a second year needs a naming change.
+
+### Practical section
+
+Each week page opens with **Practical this week** at the top of Start here, above the plan, Reddit and talks.
+It lists up to 5 practical workflows and skills shared on X and Reddit that week, ranked by engagement,
+without anything already in that week's Brief A (plan) or Brief B (Reddit). Weeks without a data file
+render exactly as before (no block).
+
+```bash
+# weekly, after add_week.py build (the week must already be in classic/index.html) and before git add
+python3 practical.py check  $START   # validate + print which entries are kept or skipped; writes nothing
+python3 practical.py render $START   # write/replace the block in classic/index.html, then run redesign/build.py
+```
+
+- The build line gains `practical N` (number shown). `practical None` means no data file for that week; that is
+  normal for weeks before Nov 9, 2026.
+- `add_week.py build` keeps the block on rebuild when the file exists (`--no-practical` leaves it out), and
+  `aie_brief.py render` leaves it alone. Rerunning `render` gives the same output (no diff).
+- Classic markup: `<!-- Practical:start wk-NN -->` … `<!-- Practical:end wk-NN -->` with
+  `<section class="src" id="practical-NN">` and `article.tcard.pr-card` cards, right after the week header.
+  `redesign/build.py` (`parse_practical`) reads it. Public anchors: `week-NN.html#practical-NN` (or `#practical`),
+  one card `#pr-NN-<n>`; `index.html#practical-NN` redirects. Search lists the cards as "Practical".
+
+**File:** `weeks-data/<monday>-practical.json`
+
+```json
+{
+  "week": 46, "start": "2026-11-09",
+  "window": "Mon Nov 9, 2026 00:00 to Sun Nov 15, 2026 23:59, Europe/Bucharest",
+  "method": "How posts were filtered and ranked (shown under 'How these were picked').",
+  "pools": {"reddit": 13, "x": 5},
+  "items": [ /* up to 5, each with a rank */ ],
+  "runners_up": [ /* next entries, best first; rank may be null */ ]
+}
+```
+
+Each entry in `items` and `runners_up`:
+
+| field | type | notes |
+| --- | --- | --- |
+| `rank` | int, or null in `runners_up` | `items` are read in rank order |
+| `title` | string, required | editorial title; `` `code` `` is shown as code |
+| `platform` | `"x"` or `"reddit"`, required | |
+| `author` | string or null | `@handle` or `u/name` |
+| `community` | string or null | for example `r/ClaudeAI` (optional, added to the proposed schema) |
+| `url` | `https://` string, required | the post itself; used by the skip rule |
+| `posted_at` | ISO 8601 with offset, or null | for example `2026-11-11T16:07:00+02:00` |
+| `engagement` | object or null | X: `likes`, `reposts`, `replies`, `bookmarks`; Reddit: `score`, `comments` |
+| `native_score` | int or null | must equal the formula below when the counts are given |
+| `percentile` | 0–1 or null | within the post's own platform |
+| `summary`, `try_it`, `caveats` | string or null | plain text; bare `https://` links become links |
+
+Missing data stays `null` and is simply not shown. Never fill a number or a link that the source did not give.
+Unknown keys, a wrong `native_score`, two entries for the same post, or more than 5 `items` stop `render`
+before anything is written.
+
+**Ranking (done by the collector, not by the script):** X native = likes + reposts × 2 + replies;
+Reddit native = score + comments × 2. Percentile inside each platform = (N − rank + 1) / N; then both
+platforms are merged by percentile. The script keeps the order it is given: `items` by rank, then
+`runners_up` in list order.
+
+**Skip rule (done by the script):** walking that order, an entry is skipped when its post is already linked
+anywhere in the same week's Brief A or Brief B (same Reddit thread id, same X status id, or same host+path),
+or when its normalised title equals a Brief A or Brief B card title. The first 5 that are left are shown,
+renumbered 1–5. Skipped titles are listed under "How these were picked".
 
 **Prototype only.** A third, separate site to iterate on Zander's unified
 2-brief-per-week idea in the Drift design. It does **not** replace or modify

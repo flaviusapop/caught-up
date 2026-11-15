@@ -22,6 +22,8 @@ A week = Brief A (AI learning plan, from a plan markdown file) + Brief B
        Other weeks are left byte-for-byte untouched.
        Brief C (optional): if weeks-data/aie-<start>.json exists (made by
        aie_brief.py import-preview), the week also gets Brief C — AI Engineer.
+       Practical (optional): if weeks-data/<start>-practical.json exists (see
+       practical.py), the week keeps its Practical block on rebuild.
 
 Key: read from /home/box/.config/redditapis.env (REDDITAPIS_API_KEY=...).
 Never printed. Read-only GET requests only.
@@ -32,6 +34,10 @@ try:  # optional Brief C (AI Engineer); add_week.py works the same without it
     import aie_brief
 except ImportError:  # pragma: no cover
     aie_brief = None
+try:  # optional Practical block; add_week.py works the same without it
+    import practical
+except ImportError:  # pragma: no cover
+    practical = None
 
 ROOT = pathlib.Path(__file__).resolve().parent
 CACHE = ROOT / "data-cache"
@@ -340,6 +346,9 @@ def cmd_build(a):
     aie = aie_brief.load(s) if aie_brief and not a.no_brief_c else None
     if aie:  # weeks-data/aie-<start>.json exists: keep Brief C on rebuild
         block = aie_brief.apply_to_block(block, aie)
+    pr = practical.load(a.start) if practical and not a.no_practical else None
+    if pr:  # weeks-data/<start>-practical.json exists: keep Practical on rebuild (skip rule runs against this block)
+        block, pr_kept, _ = practical.apply_to_block(block, pr, wk)
     src = INDEX.read_text()
     loc = find_week(src, wk)
     if loc:
@@ -383,7 +392,8 @@ def cmd_build(a):
 </html>
 ''')
     print(f"Week {wk} built: Brief A '{title_a}', Brief B {kept} threads kept"
-          + (f", Brief C {len(aie['videos'])} talks" if aie else ""))
+          + (f", Brief C {len(aie['videos'])} talks" if aie else "")
+          + (f", Practical {len(pr_kept)}" if pr else ""))
     rebuild_site()
 
 def rebuild_site():
@@ -400,6 +410,7 @@ def main():
     k = sp.add_parser("comments"); k.add_argument("start")
     b = sp.add_parser("build"); b.add_argument("plan"); b.add_argument("start"); b.add_argument("--plan-label")
     b.add_argument("--no-brief-c", action="store_true", help="leave Brief C out even if weeks-data/aie-<start>.json exists")
+    b.add_argument("--no-practical", action="store_true", help="leave Practical out even if weeks-data/<start>-practical.json exists")
     a = ap.parse_args()
     {"collect": cmd_collect, "comments": cmd_comments, "build": cmd_build}[a.cmd](a)
 

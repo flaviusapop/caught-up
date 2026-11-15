@@ -10,7 +10,8 @@ add_week.py build and aie_brief.py render call this at the end, so the weekly
 routine does not need an extra step.
 
 Inputs:
-  classic/index.html             Brief A (learning plan) and Brief B (Reddit), as add_week.py renders them
+  classic/index.html             Brief A (learning plan) and Brief B (Reddit), as add_week.py renders them,
+                                 plus the Practical block that practical.py writes (top of Start here)
   weeks-data/aie-*.json          Brief C (AI Engineer talks and concepts)
 
 Outputs (generated, do not edit by hand): index.html (latest week), week-NN.html,
@@ -223,6 +224,33 @@ def parse_reddit(sec):
     return out
 
 
+def parse_practical(sec):
+    """The Practical block practical.py writes: up to 5 workflow/skill cards from X and Reddit."""
+    hed = sec.one("div", "hed")
+    out = {"title": clean(hed.one("h3").text()) if hed and hed.one("h3") else "",
+           "method": hed.one("p", "pr-method").inner() if hed and hed.one("p", "pr-method") else "",
+           "meta": hed.one("p", "pr-meta").inner() if hed and hed.one("p", "pr-meta") else "", "items": []}
+    for k in sec.all("article", "pr-card"):
+        a = k.one("h3").one("a")
+        t = clean(a.text())
+        rm = re.match(r"(\d+)\.\s+(.*)", t)
+        title_html = re.sub(r"^\d+\.\s+", "", a.inner())
+        try:
+            eng = json.loads(k.a.get("data-eng") or "null")
+        except ValueError:
+            eng = None
+        one = lambda c: k.one("p", c).inner() if k.one("p", c) else ""
+        try_it, cav = one("pr-try"), one("pr-cav")
+        out["items"].append({
+            "n": int(rm.group(1)) if rm else len(out["items"]) + 1, "title": rm.group(2) if rm else t,
+            "title_html": title_html, "url": a.a.get("href", ""), "platform": k.a.get("data-platform", ""),
+            "author": k.a.get("data-author", ""), "community": k.a.get("data-community", ""),
+            "native": int(k.a["data-native"]) if k.a.get("data-native", "").isdigit() else None,
+            "posted": k.a.get("data-posted", ""), "eng": eng, "eng_line": one("pr-eng"), "summary": one("summary"),
+            "try": re.sub(r"^<b>Try it:</b>\s*", "", try_it), "caveats": re.sub(r"^<b>Caveats:</b>\s*", "", cav)})
+    return out
+
+
 def put(path, text, **_):
     """Write UTF-8 with LF line ends on every platform and Python version."""
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -243,20 +271,24 @@ def load(classic, data):
         wk = int(sec.a["id"].split("-")[1])
         year = years.get(wk, dt.date.today().year)
         start = dt.date.fromisocalendar(year, wk, 1)
-        w = {"wk": wk, "start": start, "end": start + dt.timedelta(days=6), "plan": None, "reddit": None, "talks": None}
+        w = {"wk": wk, "start": start, "end": start + dt.timedelta(days=6), "plan": None, "reddit": None, "talks": None,
+             "practical": None}
         for s in sec.all("section", "src"):
             sid = s.a.get("id", "")
             if sid.startswith("learning"):
                 w["plan"] = parse_plan(s, year)
             elif sid.startswith("reddit"):
                 w["reddit"] = parse_reddit(s)
+            elif sid.startswith("practical"):
+                w["practical"] = parse_practical(s)
         weeks[wk] = w
     for p in sorted(data.glob("aie-*.json")):
         t = json.loads(p.read_text(encoding="utf-8"))
         wk = t["week"]
         if wk not in weeks:
             start = dt.date.fromisoformat(t["start"])
-            weeks[wk] = {"wk": wk, "start": start, "end": start + dt.timedelta(days=6), "plan": None, "reddit": None}
+            weeks[wk] = {"wk": wk, "start": start, "end": start + dt.timedelta(days=6), "plan": None, "reddit": None,
+                         "practical": None}
         weeks[wk]["talks"] = t
     return sorted(weeks.values(), key=lambda w: w["start"], reverse=True)
 
@@ -312,7 +344,7 @@ var h0=decodeURIComponent(location.hash.slice(1));r.dataset.view=V.indexOf(h0)>-
 function set(v){r.dataset.view=v;var a=d.querySelectorAll('.tabs a');for(var i=0;i<a.length;i++){if(a[i].getAttribute('href')==='#'+v)a[i].setAttribute('aria-current','page');else a[i].removeAttribute('aria-current')}}
 function resolve(){var h=decodeURIComponent(location.hash.slice(1));if(!h){set('start');return}
 if(V.indexOf(h)>-1){set(h);return}
-var el=d.getElementById(h);if(!el&&h.indexOf('aie-')===0)el=d.getElementById('t-'+h.slice(4));if(!el)return;
+var el=d.getElementById(h);if(!el&&h.indexOf('aie-')===0)el=d.getElementById('t-'+h.slice(4));if(!el&&h==='practical')el=d.querySelector('[id^="practical-"]');if(!el)return;
 var p=el.closest('.panel');if(p)set(p.id);
 for(var x=el;x;x=x.parentElement)if(x.tagName==='DETAILS')x.open=true;
 el.scrollIntoView()}
@@ -400,7 +432,8 @@ def stats(w):
     kept = sum(len(s["threads"]) for s in r["subs"]) if r and "subs" in r else None
     return {"items": items, "listed": listed,
             "hours": (p["stated_h"] if p and p["stated_h"] else round(listed / 60, 1)) if p else None,
-            "kept": kept, "talks": len(t["videos"]) if t else None}
+            "kept": kept, "talks": len(t["videos"]) if t else None,
+            "practical": len(w["practical"]["items"]) if w.get("practical") else None}
 
 
 def ledger(weeks, cur):
@@ -415,7 +448,8 @@ def ledger(weeks, cur):
         kept = str(s["kept"]) if s["kept"] is not None else "–"
         talks = str(s["talks"]) if s["talks"] is not None else "–"
         rows += (f'<li><a class="lw" href="week-{n}.html"{ac}><span class="lw-n"><b>{n}</b> '
-                 f'<span>{rng(w["start"], w["end"], False)}</span></span>'
+                 f'<span>{rng(w["start"], w["end"], False)}</span>'
+                 + (f'<span class="lw-p">{s["practical"]} practical</span>' if s["practical"] else "") + '</span>'
                  f'<span><span class="vh">plan </span>{hours}</span>'
                  f'<span><span class="vh">Reddit </span>{kept}</span>'
                  f'<span><span class="vh">talks </span>{talks}</span></a></li>')
@@ -423,7 +457,7 @@ def ledger(weeks, cur):
   <h2 class="ledger-h">All weeks</h2>
   <div class="lw lw-h" aria-hidden="true"><span class="lw-n">Week</span><span>Plan</span><span>Reddit</span><span>Talks</span></div>
   <ol class="lws">{rows}</ol>
-  <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries. A dash means not collected.</p>
+  <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries. A dash means not collected. Practical picks show under the dates.</p>
 </nav>"""
 
 
@@ -677,10 +711,53 @@ def render_talks(w, where):
     return out
 
 
+# ------------------------------------------------------------------ practical
+def render_practical(w):
+    """Top of Start here: the week's practical workflows and skills (X and Reddit), above everything else."""
+    pr, wk = w.get("practical"), w["wk"]
+    if not pr:
+        return ""
+    n = len(pr["items"])
+    rows = ""
+    for it in pr["items"]:
+        where = "X" if it["platform"] == "x" else "Reddit"
+        margin = (f'<span class="m-n"><b>{it["native"]:,}</b> score</span>' if it["native"] is not None else "")
+        margin += f'<span class="m-k">on {where}</span>'
+        when = ""
+        if it["posted"]:
+            try:
+                d = dt.datetime.fromisoformat(it["posted"])
+                when = f"{d:%a} {d:%b} {d.day}"
+            except ValueError:
+                pass
+        by = " · ".join(esc(x) for x in (it["author"], it["community"], when) if x)
+        more = ""
+        if it["eng_line"]:
+            more += f'<p class="pr-eng">{it["eng_line"]}</p>'
+        if it["caveats"]:
+            more += f'<p>{it["caveats"]}</p>'
+        rows += (f'<article class="it pr" id="pr-{wk}-{it["n"]}" data-platform="{esc(it["platform"])}">'
+                 f'<div class="m">{margin}</div>'
+                 f'<div class="b"><h4><span class="rk">{it["n"]}.</span> {out_link(it["title_html"], it["url"], raw=True)}</h4>'
+                 + (f'<p class="by">{by}</p>' if by else "")
+                 + (f'<p class="sum">{it["summary"]}</p>' if it["summary"] else "")
+                 + (f'<p class="pr-try"><b>Try it</b> {it["try"]}</p>' if it["try"] else "")
+                 + (f'<details class="more"><summary>{icon("open", "i-open")}Engagement and caveats</summary>{more}</details>' if more else "")
+                 + '</div></article>')
+    if not rows:
+        rows = '<p class="none">Nothing practical left after removing what the plan and the Reddit brief already cover.</p>'
+    about = "".join(f"<p>{x}</p>" for x in (pr["method"], pr["meta"]) if x)
+    note = f'{n} workflow{"s" if n != 1 else ""} and skills · X and Reddit, by engagement'
+    return (f'<section class="grp pr-grp" id="practical-{wk}">{band("Practical this week", note)}'
+            f'<p class="gnote">Shared on X and Reddit this week and not already in the plan or the Reddit brief.</p>{rows}'
+            + (f'<details class="about about-in"><summary>{icon("open", "i-open")}How these were picked</summary>{about}</details>' if about else "")
+            + '</section>')
+
+
 # ------------------------------------------------------------------ start
 def render_start(w, s):
     p, r, t, wk = w["plan"], w["reddit"], w["talks"], w["wk"]
-    out = '<h2 class="vh">Start here</h2>'
+    out = '<h2 class="vh">Start here</h2>' + render_practical(w)
     has_r = bool(r and "subs" in r)
     if has_r and r["headline"]:
         out += (f'<p class="lede">{esc(r["headline"])}</p>'
@@ -729,6 +806,8 @@ def render_week(w, weeks, where, legacy=""):
         tally.append(f'<li><b>{s["kept"]}</b> Reddit threads kept</li>')
     if s["talks"] is not None:
         tally.append(f'<li><b>{s["talks"]}</b> talk summaries</li>')
+    if s["practical"]:
+        tally.append(f'<li><b>{s["practical"]}</b> practical picks</li>')
     def tab(v, label, n):
         cur = ' aria-current="page"' if v == "start" else ""
         return f'<a href="#{v}"{cur}>{label}' + (f' <b>{n}</b>' if n is not None else "") + '</a>'
@@ -744,7 +823,9 @@ def render_week(w, weeks, where, legacy=""):
 <section class="panel" id="plan">{plan_html}</section>
 <section class="panel" id="reddit">{render_reddit(w)}</section>
 <section class="panel" id="talks">{render_talks(w, where)}</section>"""
-    desc = f"{TAGLINE} Week {wk}, {rng(w['start'], w['end'])}: learning plan, Reddit brief and AI Engineer talk summaries."
+    desc = (f"{TAGLINE} Week {wk}, {rng(w['start'], w['end'])}: "
+            + ("practical workflows from X and Reddit, " if s["practical"] else "")
+            + "learning plan, Reddit brief and AI Engineer talk summaries.")
     return page(f"Week {wk} · {NAME}", desc, body, weeks, cur=wk, extra_head=legacy)
 
 
@@ -753,6 +834,12 @@ def search_data(weeks):
     rows = []
     for w in weeks:
         wk = w["wk"]
+        if w.get("practical"):
+            for it in w["practical"]["items"]:
+                where = "X" if it["platform"] == "x" else "Reddit"
+                rows.append({"w": wk, "k": "Practical", "t": strip(it["title_html"]), "u": f"week-{wk}.html#pr-{wk}-{it['n']}",
+                             "m": " · ".join(x for x in (where, it["author"], it["community"]) if x),
+                             "s": strip(it["summary"] + " " + it["try"])})
         if w["plan"]:
             for g in w["plan"]["groups"]:
                 for it in g["items"]:
@@ -780,7 +867,7 @@ def search_data(weeks):
 
 
 def render_search(weeks):
-    body = ('<header class="wkhead"><h1>Search</h1><p class="wk-d">Plans, Reddit threads, talks and ideas across every week</p></header>'
+    body = ('<header class="wkhead"><h1>Search</h1><p class="wk-d">Practical picks, plans, Reddit threads, talks and ideas across every week</p></header>'
             '<form class="tools tools-col" action="search.html" role="search"><label class="filter filter-l"><span class="vh">Search all weeks</span>' + icon("search") +
             '<input type="search" name="q" data-search-q placeholder="Try evals, sandbox, Sierra Chart" autocomplete="off"></label>'
             '<span class="tools-s" data-search-status aria-live="polite">Type at least two letters.</span></form>'
@@ -811,6 +898,7 @@ def main():
     legacy = ('\n<script>(function(){var h=decodeURIComponent(location.hash.slice(1)),m,W=' + json.dumps(where, separators=(",", ":")) +
               ';if(!h)return;if((m=h.match(/^wk-(\\d+)$/)))location.replace("week-"+m[1]+".html");'
               'else if((m=h.match(/^(learning|reddit|aie)-(\\d{1,2})$/)))location.replace("week-"+m[2]+".html#"+({learning:"plan",reddit:"reddit",aie:"talks"})[m[1]]);'
+              'else if((m=h.match(/^practical-(\\d{1,2})$/)))location.replace("week-"+m[1]+".html#practical-"+m[1]);'
               'else if((m=h.match(/^sub-.*-(\\d{1,2})$/)))location.replace("week-"+m[1]+".html#reddit");'
               'else if((m=h.match(/^aie-(\\d+)-c(\\d+)$/)))location.replace("week-"+m[1]+".html#idea-"+m[1]+"-"+m[2]);'
               'else if((m=h.match(/^aie-(.+)$/))&&W[m[1]])location.replace("week-"+W[m[1]]+".html#t-"+m[1]);})();</script>')
@@ -822,7 +910,7 @@ def main():
             put(out / "index.html", render_week(w, weeks, where, legacy), encoding="utf-8", newline="\n")
         s = stats(w)
         report.append(f"week {w['wk']}: plan {len(s['items'])} items / {fmt_min(s['listed'])} listed, "
-                      f"reddit {s['kept']}, talks {s['talks']}, {len(doc) // 1024} KB")
+                      f"reddit {s['kept']}, talks {s['talks']}, practical {s['practical']}, {len(doc) // 1024} KB")
     put(out / "search.html", render_search(weeks), encoding="utf-8", newline="\n")
     data = search_data(weeks)
     put(out / "search-data.js", "window.DRIFT_SEARCH=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n",

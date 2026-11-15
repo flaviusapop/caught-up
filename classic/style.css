@@ -306,3 +306,10 @@ a.week-row:hover .week-name{text-decoration:underline;text-underline-offset:3px}
   .week-row .arr{flex:0 0 auto}
 }
 
+
+/* Practical (practical.py): original .tcard / .badge / .summary patterns only */
+.pr-card{overflow-wrap:anywhere;min-width:0;max-width:100%}
+.pr-card .badge{flex-wrap:wrap}
+.pr-card :is(.pr-eng,.pr-try,.pr-cav){margin:6px 0 8px;font-size:14.5px;line-height:1.5;color:var(--ink-2);max-width:var(--measure);text-wrap:pretty}
+.pr-card :is(.pr-try,.pr-cav) b{color:var(--ink);font-weight:600}
+.sum .pr-meta{margin-top:8px;font-size:14.5px}

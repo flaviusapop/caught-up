@@ -246,6 +246,16 @@ details[open]>summary .i-open{rotate:180deg}
 .nk li{padding:0.45rem 0.85rem;color:var(--ink-2);font-size:0.95rem}
 .nk b{color:var(--ink);font-weight:600;margin-right:0.35rem}
 
+/* ---------- practical: the week's workflows and skills, top of Start here */
+.pr-grp{margin-top:1.25rem}
+.pr-try{margin-top:0.65rem;max-width:var(--col);padding:0.55rem 0.85rem;background:var(--paper-2);border-radius:6px;font-size:0.97rem}
+.pr-try b{font-weight:700;margin-right:0.4rem}
+.pr-eng{color:var(--ink-2);font-size:0.92rem}
+.about-in{margin-top:0.75rem}
+.pr-grp+.lede{margin-top:2.5rem}
+.lw-n .lw-p{font-size:0.74rem;color:var(--ink-3)}
+html[data-density="compact"] .it .pr-try{display:none}
+
 /* ---------- plan: time budget */
 .budget{margin-top:1.5rem}
 .budget-r{display:flex;align-items:baseline;gap:0.5rem;flex-wrap:wrap;color:var(--ink-2)}
