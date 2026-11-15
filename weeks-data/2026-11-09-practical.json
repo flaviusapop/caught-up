@@ -43,7 +43,7 @@
       "native_score": 652,
       "percentile": 1.0,
       "summary": "Nyxera says they gave Claude Fable 5.2 one picture of a PS5 controller and got back a tour that splits the controller apart in 24 seconds. They say the skill, teardown, makes Claude work out the motion as math before it draws any part, check a still at every beat, then record the tour. Their written steps: install teardown with one `npx` line, open Claude Code, type `/teardown`, give it one picture, let it check the stills, then record the tour.",
-      "try_it": "If this would help your wife’s product or brand explainers, install the teardown skill from @elvar_official’s post, run `/teardown` on one well-lit product photo, and see whether the exploded view is accurate enough to keep. Do not treat the 24-second claim as a guarantee.",
+      "try_it": "If you make product or brand explainers, install the teardown skill from @elvar_official’s post, run `/teardown` on one well-lit product photo, and check whether the exploded view is accurate enough to keep. Do not treat the 24-second claim as a guarantee.",
       "caveats": "Several accounts posted near-identical “I gave it one photo” copy the same week, so treat this as a promo wave around the skill, not a unique field report. The author’s 24-second result was not independently checked. The exact GitHub path was not in this post, so it is not given here. The original skill announcement appears to predate this week; this is the highest-engagement use of it inside the window. @elvar_official’s own week 46 demo (a Starlink dish) scored 114 and was not double-counted."
     },
     {
@@ -61,7 +61,7 @@
       "native_score": 1059,
       "percentile": 0.923,
       "summary": "The author shipped HolyArrs, a Netflix-style front end for a home media server, and describes the workflow he says he actually uses: he writes the spec, Claude Code writes most of the code, a second agent reviews it, then he reviews security-sensitive lines himself and tests on his own server. He says the model does not care about size, so he had it build the home page two ways, measured them, and kept the version that was about 3× lighter. He also added a test that fails if idle memory goes above 250 MB; he says the app now sits around 70 MB. The same story was also posted to r/ChatGPT (native 428); only the higher-engagement copy is ranked.",
-      "try_it": "On the next Caught Up or site change, add one failing check for a budget you care about (page weight, idle memory, or time), and run a second agent as a reviewer before you merge. Keep the “if it gets heavier, it does not ship” rule in the project file, not only in chat.",
+      "try_it": "On your next project change, add one failing check for a budget you care about (page weight, idle memory, or time), and run a second agent as a reviewer before you merge. Keep the “if it gets heavier, it does not ship” rule in the project file, not only in chat.",
       "caveats": "This is also a product launch. HolyArrs is the author’s app (GitHub: https://github.com/HolyArrs/HolyArrs). He says it is still beta and should not yet be anyone’s main media app. Star, pull and pentest claims are his. The reusable part is the workflow, not the app itself."
     },
     {
@@ -99,7 +99,7 @@
       "native_score": 232,
       "percentile": 0.8,
       "summary": "The author argues that teams of agents fail because nobody drew the work: steps, handoffs, decisions and stops. The article sets out five shapes (chain, router, fan-out, manager-and-workers, loop), how to decide whether to split work (fan out independent reads, never fan out decisions), and an eight-step way to draw a graph on a page. The worked example cuts a weekly competitor report from five agents to three roles plus a publish tool that waits for a human yes. The author gives a `GRAPH.md` template that every agent is supposed to read first, covering outcome, shared state, nodes, edges, conditions and a hard “never publish without approval” rule.",
-      "try_it": "Pick one Grok Bot job you already run with more than one bot. Write a `GRAPH.md` for it tonight, merge steps that share a decision, and only then recount the bots. Put an approval node in front of anything that posts, pays, deletes or publishes.",
+      "try_it": "Pick one job you already run with more than one agent. Write a `GRAPH.md` for it, merge steps that share a decision, and only then recount the agents. Put an approval node in front of anything that posts, pays, deletes or publishes.",
       "caveats": "The Anthropic 90.2% figure and the Cognition “don’t build multi-agents” contrast are the author’s reading of those posts, not a result measured here. The article promotes the author’s Telegram channel. The `GRAPH.md` template is the reusable piece."
     }
   ],
@@ -206,8 +206,23 @@
       "posted_at": null,
       "engagement": null,
       "native_score": 205,
-      "percentile": null,
+      "percentile": 0.462,
       "summary": "Repo: https://github.com/Dodaios/ste80-humanizer.",
+      "try_it": null,
+      "caveats": null
+    },
+    {
+      "rank": null,
+      "title": "Marco Lancini’s worktree-on-a-VPS write-up",
+      "platform": "x",
+      "author": "@lancinimarco",
+      "community": null,
+      "url": "https://x.com/lancinimarco/status/2120865465035805051",
+      "posted_at": null,
+      "engagement": null,
+      "native_score": 67,
+      "percentile": 0.4,
+      "summary": "Blog: https://blog.marcolancini.it/2026/blog-updated-ai-workflow/.",
       "try_it": null,
       "caveats": null
     },
@@ -221,7 +236,7 @@
       "posted_at": null,
       "engagement": null,
       "native_score": 189,
-      "percentile": null,
+      "percentile": 0.385,
       "summary": null,
       "try_it": null,
       "caveats": null
@@ -236,7 +251,7 @@
       "posted_at": null,
       "engagement": null,
       "native_score": 138,
-      "percentile": null,
+      "percentile": 0.308,
       "summary": null,
       "try_it": null,
       "caveats": null
@@ -251,38 +266,8 @@
       "posted_at": null,
       "engagement": null,
       "native_score": 137,
-      "percentile": null,
+      "percentile": 0.231,
       "summary": null,
-      "try_it": null,
-      "caveats": null
-    },
-    {
-      "rank": null,
-      "title": "The three-part “done” check",
-      "platform": "reddit",
-      "author": "u/shopchief",
-      "community": "r/AI_Agents",
-      "url": "https://reddit.com/r/AI_Agents/comments/1xv1d8k/how_much_verification_do_you_require_before_an/",
-      "posted_at": null,
-      "engagement": null,
-      "native_score": 120,
-      "percentile": null,
-      "summary": null,
-      "try_it": null,
-      "caveats": null
-    },
-    {
-      "rank": null,
-      "title": "Marco Lancini’s worktree-on-a-VPS write-up",
-      "platform": "x",
-      "author": "@lancinimarco",
-      "community": null,
-      "url": "https://x.com/lancinimarco/status/2120865465035805051",
-      "posted_at": null,
-      "engagement": null,
-      "native_score": 67,
-      "percentile": null,
-      "summary": "Blog: https://blog.marcolancini.it/2026/blog-updated-ai-workflow/.",
       "try_it": null,
       "caveats": null
     },
@@ -296,10 +281,25 @@
       "posted_at": null,
       "engagement": null,
       "native_score": 63,
-      "percentile": null,
+      "percentile": 0.2,
       "summary": null,
       "try_it": null,
       "caveats": "Copied by several accounts."
+    },
+    {
+      "rank": null,
+      "title": "The three-part “done” check",
+      "platform": "reddit",
+      "author": "u/shopchief",
+      "community": "r/AI_Agents",
+      "url": "https://reddit.com/r/AI_Agents/comments/1xv1d8k/how_much_verification_do_you_require_before_an/",
+      "posted_at": null,
+      "engagement": null,
+      "native_score": 120,
+      "percentile": 0.154,
+      "summary": null,
+      "try_it": null,
+      "caveats": null
     }
   ]
 }

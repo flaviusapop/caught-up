@@ -57,7 +57,7 @@ python3 practical.py render $START   # write/replace the block in classic/index.
 - Classic markup: `<!-- Practical:start wk-NN -->` … `<!-- Practical:end wk-NN -->` with
   `<section class="src" id="practical-NN">` and `article.tcard.pr-card` cards, right after the week header.
   `redesign/build.py` (`parse_practical`) reads it. Public anchors: `week-NN.html#practical-NN` (or `#practical`),
-  one card `#pr-NN-<n>`; `index.html#practical-NN` redirects. Search lists the cards as "Practical".
+  one card `#pr-NN-<n>`; `index.html#practical-NN` and `index.html#pr-NN-<n>` redirect to the week page. Search lists the cards as "Practical".
 
 **File:** `weeks-data/<monday>-practical.json`
 
@@ -84,22 +84,28 @@ Each entry in `items` and `runners_up`:
 | `url` | `https://` string, required | the post itself; used by the skip rule |
 | `posted_at` | ISO 8601 with offset, or null | for example `2026-11-11T16:07:00+02:00` |
 | `engagement` | object or null | X: `likes`, `reposts`, `replies`, `bookmarks`; Reddit: `score`, `comments` |
-| `native_score` | int or null | must equal the formula below when the counts are given |
-| `percentile` | 0–1 or null | within the post's own platform |
-| `summary`, `try_it`, `caveats` | string or null | plain text; bare `https://` links become links |
+| `native_score` | int or null | with `engagement` given, every count the formula uses must be there and add up; with `engagement` null the total alone is accepted |
+| `percentile` | 0–1 or null | within the post's own platform; never rises down the list, null only at the end |
+| `summary`, `try_it`, `caveats` | string or null | plain text for a public reader (no private notes); bare `https://` links become links |
 
 Missing data stays `null` and is simply not shown. Never fill a number or a link that the source did not give.
-Unknown keys, a wrong `native_score`, two entries for the same post, or more than 5 `items` stop `render`
-before anything is written.
+Unknown keys, a wrong `native_score`, `true`/`false` where a number belongs, two entries for the same post, more
+than 5 `items`, or an order that does not follow `percentile` stop `render` before anything is written.
+
+`pools` is the size of the whole filtered pool per platform (the N of the percentile). The file may list fewer
+entries than that, never more. `window` is a string or null.
 
 **Ranking (done by the collector, not by the script):** X native = likes + reposts × 2 + replies;
 Reddit native = score + comments × 2. Percentile inside each platform = (N − rank + 1) / N; then both
 platforms are merged by percentile. The script keeps the order it is given: `items` by rank, then
-`runners_up` in list order.
+`runners_up` in list order, and checks it: walking that order, `percentile` may stay equal or fall, never rise.
+An entry whose percentile cannot be worked out stays `null` and goes last (null is allowed only at the tail).
+When a pool is larger than the list, the listed posts are taken as the top of that pool.
 
 **Skip rule (done by the script):** walking that order, an entry is skipped when its post is already linked
-anywhere in the same week's Brief A or Brief B (same Reddit thread id, same X status id, or same host+path),
-or when its normalised title equals a Brief A or Brief B card title. The first 5 that are left are shown,
+anywhere in the same week's Brief A or Brief B (same Reddit thread id, same X status id, same YouTube video id,
+or same host + path + query without tracking parameters), when its normalised title equals a Brief A or Brief B
+card title, or when a link written in its `summary` or `try_it` is already linked in Brief A or Brief B. The first 5 that are left are shown,
 renumbered 1–5. Skipped titles are listed under "How these were picked".
 
 **Prototype only.** A third, separate site to iterate on Zander's unified

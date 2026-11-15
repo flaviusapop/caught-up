@@ -12,15 +12,15 @@ Brief B (Reddit).
 
 Data: weeks-data/<monday>-practical.json (see README, "Practical section").
 Order: items (by rank), then runners_up (in list order). The skip rule walks that order,
-drops entries whose URL (or normalised title) already appears in Brief A or Brief B of
-the same week in classic/index.html, and keeps the first 5 left.
+drops entries whose URL (or normalised title, or a link in their summary / try_it) already
+appears in Brief A or Brief B of the same week in classic/index.html, and keeps the first 5 left.
 
 The block lives in classic/index.html between <!-- Practical:start wk-NN --> and
 <!-- Practical:end wk-NN -->, right after the week header. Rerunning replaces it in
 place, so the output is the same on every run. add_week.py build keeps it on rebuild.
 """
 import argparse, datetime as dt, html, json, pathlib, re, subprocess, sys
-from urllib.parse import urlsplit
+from urllib.parse import parse_qsl, urlsplit
 
 ROOT = pathlib.Path(__file__).resolve().parent
 WDATA = ROOT / "weeks-data"
@@ -43,14 +43,25 @@ def all_starts():
     return sorted((p.name[:10] for p in WDATA.glob("????-??-??-practical.json")), reverse=True)
 
 
+FORMULA_KEYS = {"x": ("likes", "reposts", "replies"), "reddit": ("score", "comments")}
+
+
+def is_int(v):
+    """A whole number. bool is a subclass of int in Python, so true/false must not pass."""
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def is_num(v):
+    return isinstance(v, (int, float)) and not isinstance(v, bool)
+
+
 def native(platform, e):
     """X: likes + reposts x 2 + replies. Reddit: score + comments x 2. None if a count is missing."""
-    try:
-        if platform == "x":
-            return e["likes"] + e["reposts"] * 2 + e["replies"]
-        return e["score"] + e["comments"] * 2
-    except (KeyError, TypeError):
+    if platform not in FORMULA_KEYS or not isinstance(e, dict) or not all(is_int(e.get(k)) for k in FORMULA_KEYS[platform]):
         return None
+    if platform == "x":
+        return e["likes"] + e["reposts"] * 2 + e["replies"]
+    return e["score"] + e["comments"] * 2
 
 
 def validate(d, start):
@@ -67,15 +78,19 @@ def validate(d, start):
         if mon.weekday() != 0:
             errs.append(f"start {mon} is not a Monday")
         wk = mon.isocalendar()[1]
-        if d.get("week") is not None and d["week"] != wk:
+        if d.get("week") is not None and (not is_int(d["week"]) or d["week"] != wk):
             errs.append(f"week {d['week']} does not match start {mon} (ISO week {wk})")
     except (TypeError, ValueError):
         errs.append("start must be the Monday as YYYY-MM-DD")
     if not isinstance(d.get("method"), str) or not d["method"].strip():
         errs.append("method must be a non-empty string")
-    if d.get("pools") is not None and not (isinstance(d["pools"], dict) and all(
-            k in ENG_KEYS and isinstance(v, int) and v >= 0 for k, v in d["pools"].items())):
+    if d.get("window") is not None and not isinstance(d["window"], str):
+        errs.append("window must be a string or null")
+    pools = d.get("pools")
+    if pools is not None and not (isinstance(pools, dict) and all(
+            k in ENG_KEYS and is_int(v) and v >= 0 for k, v in pools.items())):
         errs.append("pools must be like {\"reddit\": 13, \"x\": 5}")
+        pools = None
     items, runners = d.get("items"), d.get("runners_up", [])
     if not isinstance(items, list):
         errs.append("items must be a list")
@@ -111,7 +126,7 @@ def validate(d, start):
             for k in ("author", "community", "summary", "try_it", "caveats"):
                 if it.get(k) is not None and not isinstance(it[k], str):
                     errs.append(f"{at}: {k} must be a string or null")
-            if it.get("rank") is not None and not (isinstance(it["rank"], int) and it["rank"] > 0):
+            if it.get("rank") is not None and not (is_int(it["rank"]) and it["rank"] > 0):
                 errs.append(f"{at}: rank must be a positive whole number or null")
             if where == "items" and it.get("rank") is None:
                 errs.append(f"{at}: items need a rank")
@@ -130,21 +145,56 @@ def validate(d, start):
                     for k, v in e.items():
                         if k not in ENG_KEYS[p]:
                             errs.append(f"{at}: engagement key {k!r} is not one of {', '.join(ENG_KEYS[p])}")
-                        elif v is not None and not (isinstance(v, int) and v >= 0):
+                        elif v is not None and not (is_int(v) and v >= 0):
                             errs.append(f"{at}: engagement.{k} must be a whole number >= 0 or null")
             ns = it.get("native_score")
-            if ns is not None and not isinstance(ns, int):
-                errs.append(f"{at}: native_score must be a whole number or null")
-            elif ns is not None and e and p in ENG_KEYS:
+            if ns is not None and not (is_int(ns) and ns >= 0):
+                errs.append(f"{at}: native_score must be a whole number >= 0 or null")
+            elif ns is not None and isinstance(e, dict) and p in ENG_KEYS:
+                # engagement null + native_score set is allowed (the source gave only the total);
+                # once counts are listed, every count the formula uses must be there and add up
                 calc = native(p, e)
-                if calc is not None and calc != ns:
+                if calc is None:
+                    errs.append(f"{at}: native_score is set, so engagement needs "
+                                f"{', '.join(FORMULA_KEYS[p])} (or set engagement to null)")
+                elif calc != ns:
                     errs.append(f"{at}: native_score {ns} does not match the engagement counts ({calc})")
             pc = it.get("percentile")
-            if pc is not None and not (isinstance(pc, (int, float)) and 0 <= pc <= 1):
+            if pc is not None and not (is_num(pc) and 0 <= pc <= 1):
                 errs.append(f"{at}: percentile must be between 0 and 1, or null")
     ranks = [it.get("rank") for it in items if isinstance(it, dict)]
     if len(set(ranks)) != len(ranks):
         errs.append("items: ranks must be unique")
+    # pools = how many posts passed the filter on each platform (the N of the percentile);
+    # the file may list fewer than that, never more
+    if pools is not None:
+        listed = {}
+        for it in items + runners:
+            if isinstance(it, dict) and it.get("platform") in ENG_KEYS:
+                listed[it["platform"]] = listed.get(it["platform"], 0) + 1
+        for p, n in sorted(listed.items()):
+            if pools.get(p, 0) < n:
+                errs.append(f"pools.{p} is {pools.get(p, 0)} but {n} {p} entries are listed; "
+                            f"pools is the size of the whole filtered pool")
+    # the order must follow percentile: never rising, and null only at the tail
+    order = sorted((it for it in items if isinstance(it, dict)),
+                   key=lambda it: it["rank"] if is_int(it.get("rank")) else 10 ** 9)
+    order = [("items", it) for it in order] + [("runners_up", it) for it in runners if isinstance(it, dict)]
+    last, null_at = None, None
+    for where, it in order:
+        pc, name = it.get("percentile"), f"{where} {str(it.get('title'))[:50]!r}"
+        if pc is None:
+            null_at = null_at or name
+        elif not (is_num(pc) and 0 <= pc <= 1):
+            continue
+        elif null_at:
+            errs.append(f"{name}: has a percentile but comes after {null_at}, which has none; "
+                        f"entries without a percentile go last")
+        elif last is not None and pc > last[0]:
+            errs.append(f"{name}: percentile {pc:g} is higher than {last[1]} before it ({last[0]:g}); "
+                        f"order must follow percentile, highest first")
+        else:
+            last = (pc, name)
     return errs
 
 
@@ -163,17 +213,59 @@ def load(start, strict=True):
 
 
 # ---------------------------------------------------------------- skip rule
+X_HOSTS = {"x.com", "twitter.com", "mobile.twitter.com", "mobile.x.com"}
+YT_HOSTS = {"youtube.com", "m.youtube.com", "music.youtube.com", "youtube-nocookie.com"}
+TRACKING = {"fbclid", "gclid", "ref", "ref_src", "ref_url", "si", "feature", "share_id", "mc_cid", "mc_eid", "igshid"}
+
+
 def url_key(u):
-    """Same post, whatever the host spelling: reddit thread id, X status id, else host+path."""
-    m = re.search(r"reddit\.com/(?:r/[^/]+/)?comments/([a-z0-9]+)", u, re.I) or re.search(r"redd\.it/([a-z0-9]+)", u, re.I)
-    if m:
-        return "reddit:" + m.group(1).lower()
-    m = re.search(r"(?:x|twitter)\.com/[^/]+/status(?:es)?/(\d+)", u, re.I)
-    if m:
-        return "x:" + m.group(1)
-    s = urlsplit(u.strip())
-    host = re.sub(r"^(www|m|old|mobile)\.", "", s.netloc.lower())
-    return host + s.path.rstrip("/").lower()
+    """Same post, whatever the host spelling: reddit thread id, X status id, YouTube video id,
+    else host + path + query (without tracking parameters)."""
+    try:
+        s = urlsplit(u.strip())
+        host = (s.hostname or "").lower().rstrip(".")
+    except ValueError:
+        return u.strip().lower()
+    www = host[4:] if host.startswith("www.") else host
+    if www == "reddit.com" or www.endswith(".reddit.com"):
+        m = re.match(r"/(?:(?:r|u|user)/[^/]+/)?comments/([a-z0-9]+)", s.path, re.I)
+        if m:
+            return "reddit:" + m.group(1).lower()
+    if www == "redd.it":                       # short link to a thread; i.redd.it / v.redd.it are media, not threads
+        m = re.match(r"/([a-z0-9]+)/?$", s.path, re.I)
+        if m:
+            return "reddit:" + m.group(1).lower()
+    if www in X_HOSTS:
+        m = re.match(r"/(?:i/web|[^/]+)/status(?:es)?/(\d+)", s.path, re.I)
+        if m:
+            return "x:" + m.group(1)
+    query = parse_qsl(s.query, keep_blank_values=True)
+    if www in YT_HOSTS:
+        v = dict(query).get("v") if s.path.rstrip("/") == "/watch" else None
+        m = re.match(r"/(?:shorts|live|embed|v)/([\w-]+)", s.path)
+        if v or m:
+            return "youtube:" + (v or m.group(1))
+    if www == "youtu.be" and len(s.path) > 1:
+        return "youtube:" + s.path.strip("/").split("/")[0]
+    host = re.sub(r"^(www|m|old|mobile)\.", "", host)
+    q = "&".join(f"{k}={v}" for k, v in sorted(query) if k.lower() not in TRACKING and not k.lower().startswith("utm_"))
+    return host + s.path.rstrip("/").lower() + ("?" + q if q else "")
+
+
+URL_RE = re.compile(r"https://[^\s<>\"'`\u2018\u2019\u201c\u201d\u00ab\u00bb]+")
+
+
+def trim_url(u):
+    """Drop sentence punctuation stuck to the end of a bare link; keep a ) that closes a ( inside the link."""
+    while u and (u[-1] in ".,;:!?" or (u[-1] == ")" and u.count(")") > u.count("("))
+                 or (u[-1] == "]" and u.count("]") > u.count("["))):
+        u = u[:-1]
+    return u if len(u) > len("https://") else ""
+
+
+def links_in(*texts):
+    """Bare https links written in an entry's own text (the article or repo a post is about)."""
+    return [u for t in texts for u in (trim_url(m.group(0)) for m in URL_RE.finditer(t or "")) if u]
 
 
 def title_key(t):
@@ -233,6 +325,8 @@ def pick(d, block):
             skipped.append((it, "link already in Brief A or B"))
         elif title_key(it["title"]) in titles:
             skipped.append((it, "title already in Brief A or B"))
+        elif any(url_key(u) in urls for u in links_in(it.get("summary"), it.get("try_it"))):
+            skipped.append((it, "link in its summary or try_it already in Brief A or B"))
         else:
             kept.append(it)
     return kept, skipped
@@ -245,10 +339,21 @@ def code(s):
 
 
 def text(s):
-    """Escape, turn `code` into <code> and bare https links into links."""
-    h = code(s)
-    return re.sub(r"(https://[^\s<)]+[^\s<).,;:])",
-                  lambda m: f'<a href="{m.group(1)}" target="_blank" rel="noopener">{m.group(1)}</a>', h)
+    """Turn `code` into <code> and bare https links into links. The raw text is split first and
+    every piece is escaped on its own, so a quote, > or ) after a link can never end up inside it."""
+    s, out, pos = s or "", [], 0
+    for m in re.finditer(r"`[^`]+`|" + URL_RE.pattern, s):
+        tok = m.group(0)
+        if tok.startswith("`"):
+            piece, end = f"<code>{esc(tok[1:-1])}</code>", m.end()
+        else:
+            u = trim_url(tok)
+            if not u:
+                continue
+            piece, end = f'<a href="{esc(u)}" target="_blank" rel="noopener">{esc(u)}</a>', m.start() + len(u)
+        out.append(esc(s[pos:m.start()]) + piece)
+        pos = end
+    return "".join(out) + esc(s[pos:])
 
 
 def fmt_n(n):
@@ -310,7 +415,7 @@ def practical_section(d, kept, skipped, wk):
     pool = ", ".join(f"{v} {'X' if k == 'x' else 'Reddit'}" for k, v in pools.items())
     meta = []
     if d.get("window"):
-        meta.append(f"Window: {d['window']}.")
+        meta.append(f"Window: {text(d['window'])}.")
     if pool:
         meta.append(f"Posts that passed the filter: {pool}.")
     if skipped:

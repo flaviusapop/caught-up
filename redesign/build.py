@@ -899,6 +899,7 @@ def main():
               ';if(!h)return;if((m=h.match(/^wk-(\\d+)$/)))location.replace("week-"+m[1]+".html");'
               'else if((m=h.match(/^(learning|reddit|aie)-(\\d{1,2})$/)))location.replace("week-"+m[2]+".html#"+({learning:"plan",reddit:"reddit",aie:"talks"})[m[1]]);'
               'else if((m=h.match(/^practical-(\\d{1,2})$/)))location.replace("week-"+m[1]+".html#practical-"+m[1]);'
+              'else if((m=h.match(/^pr-(\\d{1,2})-\\d+$/)))location.replace("week-"+m[1]+".html#"+h);'
               'else if((m=h.match(/^sub-.*-(\\d{1,2})$/)))location.replace("week-"+m[1]+".html#reddit");'
               'else if((m=h.match(/^aie-(\\d+)-c(\\d+)$/)))location.replace("week-"+m[1]+".html#idea-"+m[1]+"-"+m[2]);'
               'else if((m=h.match(/^aie-(.+)$/))&&W[m[1]])location.replace("week-"+W[m[1]]+".html#t-"+m[1]);})();</script>')
