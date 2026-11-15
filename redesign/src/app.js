@@ -28,17 +28,17 @@
     paintTheme();
   }
 
-  // ---- titles only
-  const titlesBtn = $('[data-titles]');
-  if (titlesBtn) {
-    press(titlesBtn, root.dataset.density === 'compact');
-    titlesBtn.addEventListener('click', () => {
-      const on = !pressed(titlesBtn);
-      press(titlesBtn, on);
-      if (on) root.dataset.density = 'compact'; else delete root.dataset.density;
-      ls.set('drift.titles', on ? '1' : '0');
-    });
-  }
+  // ---- titles only: one setting, a toggle in each view that has items
+  const titleBtns = $$('[data-titles]');
+  const paintTitles = () => titleBtns.forEach((b) => press(b, root.dataset.density === 'compact'));
+  paintTitles();
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-titles]')) return;
+    const on = root.dataset.density !== 'compact';
+    if (on) root.dataset.density = 'compact'; else delete root.dataset.density;
+    ls.set('drift.titles', on ? '1' : '0');
+    paintTitles();
+  });
 
   // ---- done state + time budget
   let done;
