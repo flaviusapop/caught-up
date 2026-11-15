@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Drift redesign: static generator.
+"""Caught Up (formerly Drift): static generator.
 
 Writes the public site at the repo root from the weekly working files:
 
@@ -20,6 +20,8 @@ import argparse, datetime as dt, html, json, pathlib, re, shutil, sys
 from html.parser import HTMLParser
 
 HERE = pathlib.Path(__file__).resolve().parent
+NAME = "Caught Up"
+TAGLINE = "Catching up with AI, one week at a time."
 REPO = HERE.parent
 esc = lambda s: html.escape(s or "", quote=True)
 clean = lambda s: re.sub(r"\s+", " ", s or "").strip()
@@ -348,6 +350,10 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
+<meta property="og:site_name" content="{NAME}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{esc(title)}">
+<meta property="og:description" content="{esc(desc)}">
 <meta name="color-scheme" content="light dark">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
@@ -360,7 +366,7 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
 {SPRITE}
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
-  <a class="mark" href="index.html" aria-label="Drift, latest week">Drift</a>
+  <a class="mark" href="index.html" aria-label="{NAME}, latest week"><b>{NAME}</b><span>{TAGLINE}</span></a>
   {nav}
   <form class="find" action="search.html" role="search">
     <label class="vh" for="q">Search all weeks</label>
@@ -377,6 +383,7 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
 {ledger(weeks, cur)}
 </div>
 <footer class="foot">
+  <p class="foot-n"><b>{NAME}</b> {TAGLINE}</p>
   <p>The learning plan comes from the published Weekly AI learning plan editions. Reddit is collected each week, read-only, from the same ten subreddits; threads are kept for real signal, not score alone. Talk summaries are machine-generated drafts from the <a href="https://www.youtube.com/@aidotengineer" target="_blank" rel="noopener">AI Engineer YouTube channel</a>, not human-reviewed; claims belong to the speakers.</p>
   <p>What you tick off is stored only in this browser. The earlier single-page layout is still at <a href="classic/index.html">classic view</a>.</p>
 </footer>
@@ -737,8 +744,8 @@ def render_week(w, weeks, where, legacy=""):
 <section class="panel" id="plan">{plan_html}</section>
 <section class="panel" id="reddit">{render_reddit(w)}</section>
 <section class="panel" id="talks">{render_talks(w, where)}</section>"""
-    desc = f"Week {wk}, {rng(w['start'], w['end'])}: learning plan, Reddit brief and AI Engineer talk summaries."
-    return page(f"Week {wk} · Drift", desc, body, weeks, cur=wk, extra_head=legacy)
+    desc = f"{TAGLINE} Week {wk}, {rng(w['start'], w['end'])}: learning plan, Reddit brief and AI Engineer talk summaries."
+    return page(f"Week {wk} · {NAME}", desc, body, weeks, cur=wk, extra_head=legacy)
 
 
 # ------------------------------------------------------------------ search
@@ -779,7 +786,7 @@ def render_search(weeks):
             '<span class="tools-s" data-search-status aria-live="polite">Type at least two letters.</span></form>'
             '<div data-search-out></div>'
             '<noscript><p class="none">Search needs JavaScript. Every week is still readable from the list of weeks.</p></noscript>')
-    return page("Search · Drift", "Search every week of Drift.", body, weeks,
+    return page("Search · " + NAME, "Search every week of " + NAME + ".", body, weeks,
                 extra_tail='\n<script src="search-data.js" defer></script>')
 
 
@@ -821,7 +828,7 @@ def main():
     put(out / "search-data.js", "window.DRIFT_SEARCH=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n",
                                         encoding="utf-8", newline="\n")
     # The Ideas page is gone: ideas live in each week's Talks view. Old links keep working.
-    moved = ('<!doctype html><meta charset="utf-8"><title>Drift</title><meta name="viewport" content="width=device-width, initial-scale=1">'
+    moved = ('<!doctype html><meta charset="utf-8"><title>Caught Up</title><meta name="viewport" content="width=device-width, initial-scale=1">'
              '<script>(function(){var h=location.hash.slice(1),m;'
              'if((m=h.match(/^c-(\\d+)-(\\d+)$/)))location.replace("week-"+m[1]+".html#idea-"+m[1]+"-"+m[2]);'
              'else if((m=h.match(/^wk-(\\d+)$/)))location.replace("week-"+m[1]+".html#talks");'

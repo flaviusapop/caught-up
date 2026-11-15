@@ -1,4 +1,4 @@
-// Drift redesign: progressive enhancement. Every page reads without this file.
+// Caught Up (formerly Drift): progressive enhancement. Every page reads without this file.
 (() => {
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];

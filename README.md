@@ -1,4 +1,8 @@
-# Drift Unified — the official weekly site
+# Caught Up (formerly Drift Unified): the weekly site
+
+> Renamed on Nov 15, 2026. The public pages say **Caught Up**, with the line "Catching up with AI, one week at a time."
+> The name and the line are the constants `NAME` and `TAGLINE` at the top of `redesign/build.py`.
+> The repo name, the `classic/` page and the browser storage keys (`drift.*`) keep the old name.
 
 > As of Oct 25, 2026 this is the official Drift version we keep updating (Zander). The older notes below are kept for history.
 
