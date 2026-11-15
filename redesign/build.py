@@ -14,7 +14,7 @@ Inputs:
   weeks-data/aie-*.json          Brief C (AI Engineer talks and concepts)
 
 Outputs (generated, do not edit by hand): index.html (latest week), week-NN.html,
-ideas.html, search.html, search-data.js, concepts.html (redirect), assets/.
+search.html, search-data.js, assets/, and ideas.html + concepts.html (redirects to the week's Talks view).
 """
 import argparse, datetime as dt, html, json, pathlib, re, shutil, sys
 from html.parser import HTMLParser
@@ -359,7 +359,7 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
 {CONTRACT}
 {SPRITE}
 <a class="skip" href="#main">Skip to content</a>
-<header class="{'bar has-wk' if nav else 'bar'}">
+<header class="bar">
   <a class="mark" href="index.html" aria-label="Drift, latest week">Drift</a>
   {nav}
   <form class="find" action="search.html" role="search">
@@ -367,7 +367,6 @@ def page(title, desc, body, weeks, cur=None, extra_head="", extra_tail=""):
     {icon("search")}<input id="q" name="q" type="search" placeholder="Search all weeks" autocomplete="off">
   </form>
   <div class="bar-t">
-    <a href="ideas.html">Ideas</a>
     <button type="button" class="txt" data-theme-toggle>Night</button>
   </div>
 </header>
@@ -418,7 +417,6 @@ def ledger(weeks, cur):
   <div class="lw lw-h" aria-hidden="true"><span class="lw-n">Week</span><span>Plan</span><span>Reddit</span><span>Talks</span></div>
   <ol class="lws">{rows}</ol>
   <p class="ledger-k">Plan in hours. Reddit in threads kept. Talks in summaries. A dash means not collected.</p>
-  <p class="ledger-l"><a href="ideas.html">Ideas across weeks</a></p>
 </nav>"""
 
 
@@ -570,10 +568,10 @@ def talk_ref(v, where, pre=""):
     return f'<a href="{pre if pre else ""}#t-{esc(v["id"])}">{esc(t)}</a>{tail}'
 
 
-def idea_body(c, where, cur_wk, full=False):
+def idea_body(c, where, cur_wk):
     def ref(v):
         wk = where.get(v["id"])
-        return talk_ref(v, where, "" if wk == cur_wk and not full else f"week-{wk}.html")
+        return talk_ref(v, where, "" if wk == cur_wk else f"week-{wk}.html")
     out = ""
     for st in c["statements"]:
         seen, uniq = set(), []
@@ -582,8 +580,6 @@ def idea_body(c, where, cur_wk, full=False):
                 seen.add(e["id"])
                 uniq.append(e)
         out += f'<p>{esc(st["text"])}</p>'
-        if full and st["evidence"]:
-            out += '<ul class="ev">' + "".join(f'<li>{esc(e["excerpt"])} <span class="who">{esc(split_title(e["title"])[0])}</span></li>' for e in st["evidence"]) + '</ul>'
         if uniq:
             out += '<ul class="refs">' + "".join(f"<li>{ref(e)}</li>" for e in uniq) + '</ul>'
     for par in c["paragraphs"]:
@@ -745,29 +741,7 @@ def render_week(w, weeks, where, legacy=""):
     return page(f"Week {wk} · Drift", desc, body, weeks, cur=wk, extra_head=legacy)
 
 
-# ------------------------------------------------------------------ ideas + search
-def render_ideas(weeks, where):
-    body = ('<header class="wkhead"><h1>Ideas</h1><p class="wk-d">Every idea drawn from the talks, newest week first</p></header>'
-            '<div class="tools tools-col"><label class="filter"><span class="vh">Filter ideas</span>' + icon("search") +
-            '<input type="search" data-idea-q placeholder="Filter ideas" autocomplete="off"></label>'
-            '<span class="tools-s" data-idea-status aria-live="polite"></span></div>')
-    for w in weeks:
-        t = w["talks"]
-        if not t or not t["concepts"]:
-            continue
-        top, rest = top_ideas(t)
-        items = ""
-        for i in top + rest:
-            c = t["concepts"][i]
-            items += (f'<details class="idea" id="c-{w["wk"]}-{i + 1}" data-idea><summary>{icon("open", "i-open")}<span>{esc(c["title"])}</span>'
-                      + ('<em>strongest</em>' if i in top else "") + f'</summary><div class="idea-b">{idea_body(c, where, w["wk"], full=True)}</div></details>')
-        n = w["wk"]
-        note = rng(w["start"], w["end"], False) + " · " + str(len(t["concepts"])) + " ideas"
-        body += (f'<section class="grp" id="wk-{n}" data-idea-grp>{band("Week " + str(n), note)}{items}'
-                 f'<p class="go"><a href="week-{n}.html#talks">Open week {n} talks</a></p></section>')
-    return page("Ideas · Drift", "Ideas drawn from the AI Engineer talks, week by week.", body, weeks)
-
-
+# ------------------------------------------------------------------ search
 def search_data(weeks):
     rows = []
     for w in weeks:
@@ -842,15 +816,19 @@ def main():
         s = stats(w)
         report.append(f"week {w['wk']}: plan {len(s['items'])} items / {fmt_min(s['listed'])} listed, "
                       f"reddit {s['kept']}, talks {s['talks']}, {len(doc) // 1024} KB")
-    put(out / "ideas.html", render_ideas(weeks, where), encoding="utf-8", newline="\n")
     put(out / "search.html", render_search(weeks), encoding="utf-8", newline="\n")
     data = search_data(weeks)
     put(out / "search-data.js", "window.DRIFT_SEARCH=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n",
                                         encoding="utf-8", newline="\n")
-    put(out / "concepts.html", 
-        '<!doctype html><meta charset="utf-8"><title>Ideas · Drift</title><meta name="viewport" content="width=device-width, initial-scale=1">'
-        '<script>location.replace("ideas.html"+location.hash)</script><p><a href="ideas.html">Ideas moved here</a></p>\n',
-        encoding="utf-8", newline="\n")
+    # The Ideas page is gone: ideas live in each week's Talks view. Old links keep working.
+    moved = ('<!doctype html><meta charset="utf-8"><title>Drift</title><meta name="viewport" content="width=device-width, initial-scale=1">'
+             '<script>(function(){var h=location.hash.slice(1),m;'
+             'if((m=h.match(/^c-(\\d+)-(\\d+)$/)))location.replace("week-"+m[1]+".html#idea-"+m[1]+"-"+m[2]);'
+             'else if((m=h.match(/^wk-(\\d+)$/)))location.replace("week-"+m[1]+".html#talks");'
+             'else location.replace("index.html#talks");})();</script>'
+             '<p>Ideas now sit in each week under Talks. <a href="index.html#talks">Open the newest week</a></p>\n')
+    put(out / "ideas.html", moved)
+    put(out / "concepts.html", moved)
     print("\n".join(report))
     print(f"search index: {len(data)} entries. Wrote {out}")
 
