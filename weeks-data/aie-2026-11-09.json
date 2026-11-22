@@ -185,6 +185,32 @@
  ],
  "videos": [
   {
+   "id": "Cyt3LU8TyNc",
+   "url": "https://www.youtube.com/watch?v=Cyt3LU8TyNc",
+   "title": "\"Where is all the automation?\" — Diogo Almeida, TypeSafe AI",
+   "date": "2026-11-15",
+   "topics": [],
+   "caption_source": true,
+   "overview": "Almeida argues that impressive AI assistance has not translated into dependable automation because models are optimized for human-facing responses rather than reliable decisions inside software. He proposes narrowly reliable, machine-native intelligence as a new software primitive and calls for engineering experiments in memory, security, semantic typing, interfaces, and filtering unwanted content.",
+   "key_points": [
+    "Almeida distinguishes assistance, where a person can evaluate an impressive answer, from automation, where a background decision must be correct and integrate with code. He uses research responses, accounting, and drive-through automation to illustrate the gap.",
+    "He attributes much of this gap to training objectives, especially reinforcement learning from human feedback, arguing that pleasing people is not equivalent to completing operational tasks correctly.",
+    "His proposed hierarchy places choosing the right task above data, compute, and algorithms. He invokes next-token prediction and instruction-following training as examples of changing objectives unlocking capabilities that scaling alone would not deliver.",
+    "He presents his team's model, captioned variously as “Jev” and “Jeff,” as prioritizing narrow reliability, while offering no quantitative performance evidence in the spoken transcript.",
+    "His software vision embeds intelligence in execution rather than merely using coding agents to produce conventional software faster. The blue-LED analogy illustrates his expectation that a composable semantic primitive could unlock disproportionately many applications.",
+    "He advocates task decomposition, verifiable stages, encapsulation, and explicit state management, and identifies KV-cache constraints as an obstacle to richer agent memory, shared state, and routing.",
+    "He connects low-quality generated content to externalized costs: producers can distribute unreliable output while recipients bear the burden of checking it. Reliable filtering is one proposed countermeasure."
+   ],
+   "summary": [
+    "Almeida opens by describing his involvement in ChatGPT, RLHF, and InstructGPT, then asks why AI can appear extraordinary on benchmarks while leaving much everyday work unchanged. He rejects both unqualified hype and dismissal: in his view, AI is transformative but currently underdelivering on automation. His central distinction is between assistance and dependable execution. A research response may be exceptionally useful or well written yet still require someone to establish its correctness. Accounting and drive-through ordering illustrate tasks he considers less glamorous but insufficiently automated. For background work, he argues, the model should make a decision and hand control back to code rather than optimize for pleasing a human.",
+    "He identifies training objectives as the underlying issue, arguing that RLHF builds human supervision into the product's behavior. Even easily verifiable tasks, he says, still require subsequent checking. Moving through algorithms, compute, and data, he proposes that the most important choice is the task itself. Games supply rules that define success, whereas language-model development required discovering useful objectives. He contrasts masked language modeling with next-token prediction's usefulness for generating strings, and invokes instruction-following training as a major improvement over scaling pretrained models alone. His speculative comparisons to much higher GPT version numbers are rhetorical scaling claims, not demonstrated measurements in the captions.",
+    "The middle shifts to his team's model, whose name is inconsistently captioned as Jev or Jeff. He says its appeal comes from reliable intelligence rather than simply speed, cost, or interface. His Einstein-versus-Mr.-Bean analogy emphasizes that occasional brilliance cannot support automation if users cannot identify failures. He then distinguishes intelligent software from software merely made cheaper to write by coding agents. Comparing machine-native intelligence to the addition of blue LEDs, he imagines a composable semantic primitive that lets programs express intent and common sense—for example, recognizing a plausible email address instead of relying on elaborate regular expressions. This is a proposed direction, not a demonstrated replacement for deterministic logic.",
+    "The closing section calls for exploratory “software research” grounded in decomposition, verifiable stages, encapsulation, and explicit state management. Proposed projects include selecting useful memories from coding-agent history, sharing discoveries across agents, improving routing despite KV-cache constraints, real-time security checks, semantic properties enforced through typing or linting, and interfaces that understand intent. He also speculates about encoding the spirit of organizational rules and filtering incoming generated content whose verification costs have been pushed onto recipients. Playful, even deliberately awkward interfaces are encouraged as experiments that might yield useful discoveries. He ends by asking developers to reconsider what cannot be automated, while acknowledging that making intelligence as reliable as a logic primitive remains a high bar requiring substantial work. No audience Q&A appears in the supplied transcript."
+   ],
+   "caveats": [],
+   "action_items": []
+  },
+  {
    "id": "cWrYEBlWpcY",
    "url": "https://www.youtube.com/watch?v=cWrYEBlWpcY",
    "title": "Stop Shipping LLM Settings That Only Win on Paper - Rohan Pandey & Balaji Varadarajan, DigitalOcean",
@@ -1295,8 +1321,8 @@
    "action_items": []
   }
  ],
- "coverage": "Talks published Nov 9–Nov 12, 2026, taken from a draft preview that covers rolling window Nov 7, 17:50:39 UTC to Nov 14, 17:50:39 UTC (inclusive). This is not a complete calendar-week inventory, and the preview says its completeness is not conclusively verified.",
+ "coverage": "Talks published Nov 9–Nov 15, 2026, taken from draft previews that cover rolling windows Nov 7, 17:50:39 UTC to Nov 14, 17:50:39 UTC (inclusive) and Nov 15, 10:39:43 UTC to Nov 22, 10:39:43 UTC (end exclusive). This is not a complete calendar-week inventory, and the preview says its completeness is not conclusively verified.",
  "partial": "Partial week: talks published later in this week may be added when the next preview arrives.",
  "concept_note": "Editorial synthesis written for the draft preview, across all talks in its window (some are in the previous week). Speaker and company claims are reported as made, not independently fact-checked.",
- "caption_note": "The preview does not say which summaries used automatic YouTube captions."
+ "caption_note": "The Nov 15 summary was made from automatic YouTube captions, which can be inaccurate or incomplete; it is labelled. Earlier summaries came from a previous preview that did not report caption source."
 }
